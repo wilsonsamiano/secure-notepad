@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>MavPad — Encrypted Notepad</title>
+<meta name="description" content="MavPad: an end-to-end encrypted notepad (AES-256). One sync code links all your devices.">
+<meta name="theme-color" content="#14141c">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%93%9D%3C/text%3E%3C/svg%3E">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+html[data-theme="dark"]{--bg:#14141c;--bg2:#1b1b26;--panel:#20202e;--text:#ece9e2;--muted:#9b97a8;--accent:#e2a55a;--accent-ink:#1a1408;--border:#2e2e3f;--editor:#17171f;--danger:#e0655f;--shadow:0 8px 30px rgba(0,0,0,.45);color-scheme:dark}
+html[data-theme="light"]{--bg:#f6f3ec;--bg2:#ece8da;--panel:#fffdf8;--text:#2b2620;--muted:#8b8474;--accent:#b3541e;--accent-ink:#fff8ef;--border:#d9d0ba;--editor:#fffdf8;--danger:#c23b33;--shadow:0 8px 30px rgba(120,100,70,.18);color-scheme:light}
+html[data-theme="brown"]{--bg:#221910;--bg2:#2b2013;--panel:#342917;--text:#f2e7d3;--muted:#b39c7d;--accent:#d99a4e;--accent-ink:#241708;--border:#4a3823;--editor:#291e12;--danger:#e0655f;--shadow:0 8px 30px rgba(0,0,0,.5);color-scheme:dark}
+body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text);display:flex;height:100dvh;overflow:hidden;font-size:15px}
+button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
+input,select{font:inherit;color:var(--text)}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:6px}
+::-webkit-scrollbar-track{background:transparent}
+
+/* ---------- lock screen ---------- */
+#lock{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:100;padding:20px}
+#lock[hidden]{display:none}
+.lock-card{background:var(--panel);border:1px solid var(--border);border-radius:18px;padding:36px 34px;max-width:420px;width:100%;text-align:center;box-shadow:var(--shadow)}
+.lock-logo{font-size:52px}
+.lock-card h1{font-size:30px;letter-spacing:.5px;margin:8px 0 2px}
+.tagline{color:var(--muted);margin-bottom:18px}
+#first-run p{font-size:14px;color:var(--muted);margin-bottom:12px;line-height:1.55}
+#first-run b{color:var(--accent)}
+#gen-code-btn{background:var(--accent);color:var(--accent-ink);font-weight:700;border-radius:10px;padding:11px 18px;width:100%}
+#gen-code-btn:hover{filter:brightness(1.08)}
+.or{margin:12px 0;color:var(--muted);font-size:13px}
+#code-input{width:100%;background:var(--editor);border:1px solid var(--border);border-radius:10px;padding:12px;font-family:ui-monospace,monospace;font-size:16px;letter-spacing:1px;text-align:center;text-transform:uppercase}
+#code-input:focus{outline:2px solid var(--accent);border-color:var(--accent)}
+.remember{display:flex;align-items:center;justify-content:center;gap:8px;margin:14px 0;font-size:13px;color:var(--muted);cursor:pointer}
+.remember input{accent-color:var(--accent);width:16px;height:16px}
+#unlock-btn{background:var(--accent);color:var(--accent-ink);font-weight:700;border-radius:10px;padding:12px;width:100%;font-size:16px;margin-top:2px}
+#unlock-btn:hover{filter:brightness(1.08)}
+#unlock-btn:disabled{opacity:.55;cursor:wait}
+#lock-error{color:var(--danger);min-height:20px;font-size:13px;margin-top:10px}
+.lock-hint{font-size:12px;color:var(--muted);margin-top:6px;line-height:1.5}
+
+/* ---------- layout ---------- */
+#app{display:flex;width:100%;height:100dvh}
+#app[hidden]{display:none}
+#sidebar{width:292px;min-width:292px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:20}
+#sidebar .side-head{padding:14px 14px 8px;display:flex;align-items:center;gap:8px}
+#sidebar .brand{font-weight:800;font-size:18px;letter-spacing:.4px}
+#sidebar .brand small{color:var(--accent);font-weight:700}
+#search{margin:4px 14px 10px;background:var(--editor);border:1px solid var(--border);border-radius:9px;padding:9px 12px;width:calc(100% - 28px)}
+#search:focus{outline:2px solid var(--accent)}
+#topic-list{flex:1;overflow-y:auto;padding:2px 8px 12px}
+.side-foot{padding:10px 14px;border-top:1px solid var(--border);display:flex;gap:8px}
+.btn{background:var(--accent);color:var(--accent-ink);font-weight:700;border-radius:9px;padding:9px 12px;flex:1}
+.btn:hover{filter:brightness(1.08)}
+.btn.ghost{background:transparent;color:var(--text);border:1px solid var(--border);font-weight:600}
+.btn.ghost:hover{border-color:var(--accent);color:var(--accent)}
+.btn.danger{background:transparent;color:var(--danger);border:1px solid var(--danger)}
+.btn.small{padding:6px 10px;font-size:13px;flex:none}
+
+.topic{margin-bottom:4px}
+.topic-head{display:flex;align-items:center;gap:4px;padding:8px 8px;border-radius:9px;cursor:pointer;user-select:none}
+.topic-head:hover{background:var(--panel)}
+.chev{width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;color:var(--muted);font-size:12px;transition:transform .15s;border-radius:6px}
+.topic.open .chev{transform:rotate(90deg)}
+.topic-name{flex:1;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.topic-count{font-size:12px;color:var(--muted);background:var(--panel);border:1px solid var(--border);border-radius:20px;padding:1px 8px}
+.icon-btn{width:28px;height:28px;border-radius:7px;display:inline-flex;align-items:center;justify-content:center;color:var(--muted);font-size:16px}
+.icon-btn:hover{background:var(--panel);color:var(--accent)}
+.topic-notes{margin-left:16px;border-left:2px solid var(--border);padding-left:6px;margin-bottom:6px}
+.topic:not(.open) .topic-notes{display:none}
+.note-row{display:block;width:100%;text-align:left;padding:8px 10px;border-radius:8px;margin-bottom:2px}
+.note-row:hover{background:var(--panel)}
+.note-row.active{background:var(--panel);box-shadow:inset 3px 0 0 var(--accent)}
+.note-row .nr-title{display:block;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px}
+.note-row .nr-meta{display:block;font-size:11px;color:var(--muted);margin-top:2px}
+.note-row .nr-snippet{display:block;font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:1px}
+.empty-notes{font-size:12px;color:var(--muted);padding:6px 10px;font-style:italic}
+
+#main{flex:1;display:flex;flex-direction:column;min-width:0;background:var(--bg)}
+#topbar{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--border)}
+#menu-btn{display:none}
+#note-title{flex:1;background:transparent;border:none;font-size:19px;font-weight:700;min-width:0}
+#note-title:focus{outline:none;border-bottom:2px solid var(--accent)}
+#sync-pill{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--muted);background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:5px 11px;white-space:nowrap}
+#sync-dot{width:9px;height:9px;border-radius:50%;background:#8a8a8a}
+#sync-pill.on #sync-dot{background:#4caf50;box-shadow:0 0 8px #4caf50;animation:pulse 2s infinite}
+#sync-pill.working #sync-dot{background:var(--accent)}
+@keyframes pulse{50%{opacity:.5}}
+.top-btn{width:34px;height:34px;border-radius:9px;display:inline-flex;align-items:center;justify-content:center;font-size:17px;border:1px solid transparent;position:relative}
+.top-btn:hover{background:var(--bg2);border-color:var(--border)}
+#update-dot{position:absolute;top:5px;right:5px;width:9px;height:9px;border-radius:50%;background:var(--danger);display:none}
+#update-dot.show{display:block}
+
+#toolbar{display:flex;align-items:center;gap:2px;padding:7px 12px;border-bottom:1px solid var(--border);flex-wrap:wrap;background:var(--bg)}
+.tb{width:32px;height:32px;border-radius:8px;font-size:15px;display:inline-flex;align-items:center;justify-content:center;color:var(--muted)}
+.tb:hover{background:var(--bg2);color:var(--accent)}
+.tb b,.tb i,.tb u,.tb s{font-size:15px}
+.tb-sep{width:1px;height:20px;background:var(--border);margin:0 5px}
+#editor-wrap{flex:1;overflow-y:auto;padding:22px 26px}
+#editor{background:var(--editor);border:1px solid var(--border);border-radius:14px;min-height:100%;padding:26px 28px;font-size:16px;line-height:1.75;outline:none;max-width:860px;margin:0 auto;box-shadow:var(--shadow)}
+#editor:empty:before{content:"Start writing…  (paste or drop pictures anywhere)";color:var(--muted);font-style:italic}
+#editor img{max-width:100%;border-radius:10px;margin:10px 0;display:block;box-shadow:var(--shadow)}
+#editor h1{font-size:1.7em;margin:.6em 0 .3em}
+#editor h2{font-size:1.35em;margin:.6em 0 .3em}
+#editor ul,#editor ol{margin:.4em 0 .4em 1.4em}
+#editor blockquote{border-left:3px solid var(--accent);margin:.6em 0;padding:.2em 0 .2em 1em;color:var(--muted)}
+#editor a{color:var(--accent)}
+#statusbar{display:flex;align-items:center;gap:14px;padding:8px 16px;border-top:1px solid var(--border);font-size:12px;color:var(--muted)}
+#statusbar .spacer{flex:1}
+#statusbar a{color:var(--muted);text-decoration:none}
+#statusbar a:hover{color:var(--accent)}
+
+/* ---------- modal ---------- */
+#modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;z-index:200;padding:18px}
+#modal[hidden]{display:none}
+.modal-card{background:var(--panel);border:1px solid var(--border);border-radius:16px;max-width:560px;width:100%;max-height:88dvh;overflow-y:auto;box-shadow:var(--shadow)}
+.modal-head{display:flex;align-items:center;padding:16px 20px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--panel);z-index:2}
+.modal-head h2{flex:1;font-size:18px}
+.modal-body{padding:18px 20px}
+.set-section{margin-bottom:22px}
+.set-section h3{font-size:13px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:10px}
+.set-section p{font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:10px}
+.code-box{background:var(--editor);border:1px dashed var(--accent);border-radius:10px;padding:14px;font-family:ui-monospace,monospace;font-size:17px;letter-spacing:2px;text-align:center;margin-bottom:10px;word-break:break-all;user-select:all}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.theme-pick{display:flex;gap:8px}
+.theme-opt{flex:1;border:2px solid var(--border);border-radius:10px;padding:10px;text-align:center;font-size:13px;font-weight:600}
+.theme-opt.sel{border-color:var(--accent)}
+.theme-opt .swatch{display:block;height:26px;border-radius:6px;margin-bottom:6px}
+#update-result{font-size:13px;margin-top:8px;line-height:1.6}
+#update-result a{color:var(--accent)}
+.bmc{display:inline-flex;align-items:center;gap:8px;background:#FFDD00;color:#000;font-weight:700;border-radius:10px;padding:10px 16px;text-decoration:none}
+.ver{font-size:12px;color:var(--muted)}
+
+/* context menu */
+#ctx{position:fixed;z-index:300;background:var(--panel);border:1px solid var(--border);border-radius:10px;box-shadow:var(--shadow);min-width:180px;padding:5px;display:none}
+#ctx button{display:block;width:100%;text-align:left;padding:9px 12px;border-radius:7px;font-size:14px}
+#ctx button:hover{background:var(--bg2);color:var(--accent)}
+#ctx button.danger:hover{color:var(--danger)}
+
+/* toast */
+#toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--panel);border:1px solid var(--accent);color:var(--text);border-radius:12px;padding:12px 18px;font-size:14px;z-index:400;opacity:0;pointer-events:none;transition:all .25s;box-shadow:var(--shadow);display:flex;gap:12px;align-items:center;max-width:90vw}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:auto}
+#toast button{color:var(--accent);font-weight:700}
+
+@media (max-width:820px){
+  #sidebar{position:fixed;left:0;top:0;bottom:0;transform:translateX(-105%);transition:transform .22s;box-shadow:var(--shadow)}
+  #sidebar.open{transform:none}
+  #menu-btn{display:inline-flex}
+  #editor-wrap{padding:12px}
+  #editor{padding:18px}
+  #sync-text{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- lock screen -->
+<div id="lock">
+  <div class="lock-card">
+    <div class="lock-logo">🔐</div>
+    <h1>MavPad</h1>
+    <p class="tagline">End-to-end encrypted notepad</p>
+    <div id="first-run" hidden>
+      <p>Your <b>sync code</b> is the AES-256 key that encrypts every note — and the code that links your devices. There is no account and no recovery: keep it safe.</p>
+      <button id="gen-code-btn">Generate my sync code</button>
+      <div class="or">— or enter an existing code below —</div>
+    </div>
+    <input id="code-input" placeholder="XXXX-XXXX-XXXX-XXXX-XXXX" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="24">
+    <label class="remember"><input type="checkbox" id="remember-code" checked> Remember code on this device</label>
+    <button id="unlock-btn">Unlock</button>
+    <p id="lock-error"></p>
+    <p class="lock-hint">Use the <b>same code on every device</b>, then tap <b>Sync</b> in ⚙ Settings to link them. Notes stay encrypted everywhere — even the sync relay only ever sees ciphertext.</p>
+  </div>
+</div>
+
+<!-- app -->
+<div id="app" hidden>
+  <aside id="sidebar">
+    <div class="side-head">
+      <span class="brand">📝 MavPad <small>beta</small></span>
+    </div>
+    <input id="search" placeholder="🔍 Search notes…">
+    <div id="topic-list"></div>
+    <div class="side-foot">
+      <button class="btn" id="new-topic-btn">+ Topic</button>
+      <button class="btn ghost" id="new-note-btn">+ Note</button>
+    </div>
+  </aside>
+
+  <main id="main">
+    <header id="topbar">
+      <button class="top-btn" id="menu-btn" title="Topics">☰</button>
+      <input id="note-title" placeholder="Note title" autocomplete="off">
+      <span id="sync-pill"><span id="sync-dot"></span><span id="sync-text">Offline</span></span>
+      <button class="top-btn" id="theme-btn" title="Theme: light / dark / brown">🌙</button>
+      <button class="top-btn" id="lock-btn" title="Lock now">🔒</button>
+      <button class="top-btn" id="settings-btn" title="Settings">⚙<span id="update-dot"></span></button>
+    </header>
+    <div id="toolbar">
+      <button class="tb" data-cmd="bold" title="Bold"><b>B</b></button>
+      <button class="tb" data-cmd="italic" title="Italic"><i>I</i></button>
+      <button class="tb" data-cmd="underline" title="Underline"><u>U</u></button>
+      <button class="tb" data-cmd="strikeThrough" title="Strikethrough"><s>S</s></button>
+      <span class="tb-sep"></span>
+      <button class="tb" data-cmd="formatBlock" data-val="h1" title="Heading 1"><b>H1</b></button>
+      <button class="tb" data-cmd="formatBlock" data-val="h2" title="Heading 2"><b>H2</b></button>
+      <button class="tb" data-cmd="formatBlock" data-val="blockquote" title="Quote">❝</button>
+      <span class="tb-sep"></span>
+      <button class="tb" data-cmd="insertUnorderedList" title="Bullet list">•☰</button>
+      <button class="tb" data-cmd="insertOrderedList" title="Numbered list">1.☰</button>
+      <span class="tb-sep"></span>
+      <button class="tb" id="img-btn" title="Insert picture">🖼</button>
+      <button class="tb" id="link-btn" title="Insert link">🔗</button>
+      <button class="tb" data-cmd="removeFormat" title="Clear formatting">⌫</button>
+      <span class="tb-sep"></span>
+      <button class="tb" data-cmd="undo" title="Undo">↩</button>
+      <button class="tb" data-cmd="redo" title="Redo">↪</button>
+      <input type="file" id="img-picker" accept="image/*" multiple hidden>
+    </div>
+    <div id="editor-wrap"><div id="editor" contenteditable="true" spellcheck="true"></div></div>
+    <footer id="statusbar">
+      <span id="wordcount"></span>
+      <span id="savestate"></span>
+      <span class="spacer"></span>
+      <span id="note-time"></span>
+      <a id="bmc-foot" href="https://buymeacoffee.com/wilsonsamiano" target="_blank" rel="noopener">☕ Buy me a coffee</a>
+    </footer>
+  </main>
+</div>
+
+<!-- settings modal -->
+<div id="modal" hidden>
+  <div class="modal-card">
+    <div class="modal-head"><h2>⚙ Settings</h2><button class="icon-btn" id="modal-close">✕</button></div>
+    <div class="modal-body">
+
+      <div class="set-section">
+        <h3>🔑 Sync code</h3>
+        <p>This code encrypts everything (AES-256-GCM, key stretched with PBKDF2). Enter it on each device, then press <b>Sync</b> — devices find each other peer-to-peer and exchange only ciphertext.</p>
+        <div class="code-box" id="sync-code-box">••••</div>
+        <div class="row">
+          <button class="btn ghost small" id="copy-code-btn">📋 Copy code</button>
+          <button class="btn ghost small" id="toggle-code-btn">👁 Show</button>
+          <button class="btn ghost small" id="regen-code-btn">🎲 New code</button>
+        </div>
+        <div class="row">
+          <button class="btn small" id="sync-toggle-btn">🔗 Start sync</button>
+        </div>
+        <p id="sync-detail">Sync is off.</p>
+      </div>
+
+      <div class="set-section">
+        <h3>💾 Backup</h3>
+        <p>Export an encrypted backup file (needs your sync code to restore). Move it to another device any way you like — it is useless without the code.</p>
+        <div class="row">
+          <button class="btn ghost small" id="export-btn">⬇ Export backup</button>
+          <button class="btn ghost small" id="import-btn">⬆ Import backup</button>
+          <input type="file" id="import-picker" accept=".json,application/json" hidden>
+        </div>
+      </div>
+
+      <div class="set-section">
+        <h3>🎨 Appearance</h3>
+        <div class="theme-pick">
+          <button class="theme-opt" data-theme-pick="light"><span class="swatch" style="background:#f6f3ec;border:1px solid #d9d0ba"></span>Light</button>
+          <button class="theme-opt" data-theme-pick="dark"><span class="swatch" style="background:#14141c;border:1px solid #2e2e3f"></span>Dark</button>
+          <button class="theme-opt" data-theme-pick="brown"><span class="swatch" style="background:#4a2f16"></span>Brown</button>
+        </div>
+      </div>
+
+      <div class="set-section">
+        <h3>🔄 Updates</h3>
+        <p>MavPad checks GitHub releases for a newer version.</p>
+        <div class="row"><button class="btn ghost small" id="check-update-btn">Check for updates</button></div>
+        <div id="update-result"></div>
+      </div>
+
+      <div class="set-section">
+        <h3>☕ Support</h3>
+        <p>Made by Maverick for Wilson. If MavPad saves your day:</p>
+        <a class="bmc" href="https://buymeacoffee.com/wilsonsamiano" target="_blank" rel="noopener">☕ Buy me a coffee</a>
+      </div>
+
+      <div class="set-section">
+        <h3>ℹ About</h3>
+        <p class="ver" id="about-ver"></p>
+        <p>Single-file app. Notes live encrypted in this device's storage (IndexedDB). Sync is direct device-to-device; the relay never sees plaintext. No account, no tracking.</p>
+      </div>
+
+      <div class="set-section">
+        <h3>⚠ Device</h3>
+        <div class="row">
+          <button class="btn ghost small" id="forget-btn">Forget code on this device</button>
+          <button class="btn danger small" id="wipe-btn">Wipe everything</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div id="ctx"></div>
+<div id="toast"><span id="toast-msg"></span><button id="toast-act" hidden></button></div>
+
+<script>
+'use strict';
+/* ================= MavPad core ================= */
+/*__APP_START__*/
+const APP = {
+  name: 'MavPad',
+  version: 'beta 0.1.0',
+  code: 1,                       // versionCode — matches GitHub release tag vN
+  repo: 'wilsonsamiano/secure-notepad',
+  bmc: 'https://buymeacoffee.com/wilsonsamiano'
+};
+/*__APP_END__*/
+
+/*__CRYPTO_START__*/
+const te = new TextEncoder(), td = new TextDecoder();
+function b64(u8){ let s=''; for(let i=0;i<u8.length;i++) s+=String.fromCharCode(u8[i]); return btoa(s); }
+function ub64(s){ const bin=atob(s); const u=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) u[i]=bin.charCodeAt(i); return u; }
+function rid(){ return (crypto.getRandomValues(new Uint32Array(2))[0].toString(36)+crypto.getRandomValues(new Uint32Array(2))[0].toString(36)).replace(/[^a-z0-9]/g,'').slice(0,12) || 'x'+Date.now().toString(36); }
+function nid(){ return 'n'+Date.now().toString(36)+Math.random().toString(36).slice(2,8); }
+async function sha256hex(str){
+  const b = await crypto.subtle.digest('SHA-256', te.encode(str));
+  return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('');
+}
+/* Sync code: 20 chars from an unambiguous alphabet (~99 bits of entropy). */
+function genCode(){
+  const A='ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+  const r=crypto.getRandomValues(new Uint8Array(20));
+  let s=''; for(const b of r) s+=A[b % A.length];
+  return s.match(/.{1,4}/g).join('-');
+}
+function normCode(s){ return (s||'').toUpperCase().replace(/[^A-Z2-9]/g,''); }
+/* One code -> one key on every device: salt is derived from the code itself,
+   so both sides stretch to the identical AES-256 key without exchanging anything. */
+async function deriveKey(code){
+  const salt = await crypto.subtle.digest('SHA-256', te.encode('mavpad-salt-v1:'+code));
+  const base = await crypto.subtle.importKey('raw', te.encode('mavpad-key-v1:'+code), 'PBKDF2', false, ['deriveKey']);
+  return crypto.subtle.deriveKey(
+    {name:'PBKDF2', salt, iterations:310000, hash:'SHA-256'},
+    base, {name:'AES-GCM', length:256}, false, ['encrypt','decrypt']);
+}
+async function encJSON(key, obj){
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const ct = await crypto.subtle.encrypt({name:'AES-GCM', iv}, key, te.encode(JSON.stringify(obj)));
+  return {iv:b64(iv), data:b64(new Uint8Array(ct))};
+}
+async function decJSON(key, pack){
+  const pt = await crypto.subtle.decrypt({name:'AES-GCM', iv:ub64(pack.iv)}, key, ub64(pack.data));
+  return JSON.parse(td.decode(pt));
+}
+/* Sync room id: only someone holding the code can compute (or guess) it. */
+async function roomIdFor(code){ return 'mavpad-'+(await sha256hex('mavpad-room-v1:'+code)).slice(0,24); }
+/*__CRYPTO_END__*/
+
+/*__MERGE_START__*/
+/* Last-writer-wins merge over encrypted records. Records carry plaintext
+   metadata (id/updatedAt/deleted) and ciphertext payloads. Tombstones win
+   ties so deletes propagate. */
+function mergeRecords(local, incoming){
+  const applied = [];
+  for(const rec of incoming){
+    if(!rec || !rec.id) continue;
+    const cur = local.get(rec.id);
+    if(!cur || rec.updatedAt > cur.updatedAt ||
+       (rec.updatedAt === cur.updatedAt && rec.deleted && !cur.deleted)){
+      local.set(rec.id, rec);
+      applied.push(rec.id);
+    }
+  }
+  return applied;
+}
+/*__MERGE_END__*/
+
+/* ---------- IndexedDB ---------- */
+const DBN='mavpad';
+function idbOpen(){
+  return new Promise((res,rej)=>{
+    const r=indexedDB.open(DBN,1);
+    r.onupgradeneeded=e=>{
+      const db=e.target.result;
+      db.createObjectStore('notes',{keyPath:'id'});
+      db.createObjectStore('topics',{keyPath:'id'});
+      db.createObjectStore('meta',{keyPath:'k'});
+    };
+    r.onsuccess=e=>res(e.target.result);
+    r.onerror=()=>rej(r.error);
+  });
+}
+function idbAll(db,s){ return new Promise((res,rej)=>{ const q=db.transaction(s).objectStore(s).getAll(); q.onsuccess=()=>res(q.result||[]); q.onerror=()=>rej(q.error); }); }
+function idbPut(db,s,v){ return new Promise((res,rej)=>{ const q=db.transaction(s,'readwrite').objectStore(s).put(v); q.onsuccess=()=>res(); q.onerror=()=>rej(q.error); }); }
+function idbDel(db,s,k){ return new Promise((res,rej)=>{ const q=db.transaction(s,'readwrite').objectStore(s).delete(k); q.onsuccess=()=>res(); q.onerror=()=>rej(q.error); }); }
+
+/* ---------- in-memory state ---------- */
+let DB=null, KEY=null, CODE=null;
+const topics=new Map();   // id -> {id, name, collapsed, createdAt, updatedAt, deleted}
+const notes=new Map();    // id -> {id, topicId, title, html, updatedAt, deleted}
+let curNoteId=null, curTopicFilter='';
+let saveTimer=null, syncOn=false;
+
+/* ---------- small utils ---------- */
+const $=s=>document.querySelector(s);
+function esc(s){ return (s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function fmtTime(ts){ const d=new Date(ts); return d.toLocaleDateString('en-GB',{day:'2-digit',month:'short'})+' '+d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}); }
+function ago(ts){ const s=(Date.now()-ts)/1000; if(s<60) return 'just now'; if(s<3600) return Math.floor(s/60)+'m ago'; if(s<86400) return Math.floor(s/3600)+'h ago'; return Math.floor(s/86400)+'d ago'; }
+function stripTags(html){ const d=document.createElement('div'); d.innerHTML=html||''; return d.textContent||''; }
+function wordCount(html){ const t=stripTags(html).trim(); return t? t.split(/\s+/).length : 0; }
+/* Strip anything executable before rendering stored/synced HTML. */
+function sanitize(html){
+  const t=document.createElement('template'); t.innerHTML=html||'';
+  t.content.querySelectorAll('script,iframe,object,embed,link,style,form,input,button,select,textarea,video,audio').forEach(n=>n.remove());
+  t.content.querySelectorAll('*').forEach(n=>{
+    [...n.attributes].forEach(a=>{
+      if(/^on/i.test(a.name)||a.name==='srcdoc') n.removeAttribute(a.name);
+      if((a.name==='href'||a.name==='src'||a.name==='xlink:href')&&/^\s*javascript:/i.test(a.value)) n.removeAttribute(a.name);
+    });
+  });
+  return t.innerHTML;
+}
+let toastTimer=null;
+function toast(msg, actLabel, actFn){
+  $('#toast-msg').textContent=msg;
+  const b=$('#toast-act');
+  if(actLabel){ b.hidden=false; b.textContent=actLabel; b.onclick=()=>{hideToast(); actFn&&actFn();}; }
+  else b.hidden=true;
+  $('#toast').classList.add('show');
+  clearTimeout(toastTimer); toastTimer=setTimeout(hideToast, 5000);
+}
+function hideToast(){ $('#toast').classList.remove('show'); }
+
+/* ---------- persistence (encrypted at rest) ---------- */
+async function putTopicRec(t){
+  const pack=await encJSON(KEY,{name:t.name});
+  await idbPut(DB,'topics',{id:t.id, iv:pack.iv, data:pack.data, collapsed:!!t.collapsed, createdAt:t.createdAt, updatedAt:t.updatedAt, deleted:!!t.deleted});
+}
+async function putNoteRec(n){
+  const pack=await encJSON(KEY,{title:n.title, html:n.html});
+  await idbPut(DB,'notes',{id:n.id, topicId:n.topicId, iv:pack.iv, data:pack.data, updatedAt:n.updatedAt, deleted:!!n.deleted});
+}
+async function loadAll(){
+  topics.clear(); notes.clear();
+  for(const r of await idbAll(DB,'topics')){
+    if(r.deleted) continue;
+    try{ const d=await decJSON(KEY,r); topics.set(r.id,{id:r.id,name:d.name,collapsed:!!r.collapsed,createdAt:r.createdAt||r.updatedAt,updatedAt:r.updatedAt,deleted:false}); }
+    catch(e){ /* undecryptable record — skip */ }
+  }
+  for(const r of await idbAll(DB,'notes')){
+    if(r.deleted) continue;
+    try{ const d=await decJSON(KEY,r); notes.set(r.id,{id:r.id,topicId:r.topicId,title:d.title||'',html:d.html||'',updatedAt:r.updatedAt,deleted:false}); }
+    catch(e){}
+  }
+  if(![...topics.values()].some(t=>t.id==='general')){
+    const g={id:'general',name:'General',collapsed:false,createdAt:1,updatedAt:Date.now(),deleted:false};
+    topics.set('general',g); await putTopicRec(g); broadcastOp({kind:'topic',rec:await topicCipherRec(g)});
+  }
+}
+async function topicCipherRec(t){
+  const cur=[...await idbAll(DB,'topics')].find(r=>r.id===t.id);
+  return cur;
+}
+async function noteCipherRec(n){
+  return (await idbAll(DB,'notes')).find(r=>r.id===n.id);
+}
+function liveTopics(){ return [...topics.values()].filter(t=>!t.deleted).sort((a,b)=>a.createdAt-b.createdAt); }
+function liveNotes(topicId){
+  return [...notes.values()].filter(n=>!n.deleted&&(!topicId||n.topicId===topicId)).sort((a,b)=>b.updatedAt-a.updatedAt);
+}
+
+/* ---------- unlock ---------- */
+async function unlock(code, remember){
+  const btn=$('#unlock-btn'); btn.disabled=true; btn.textContent='Deriving key…';
+  $('#lock-error').textContent='';
+  try{
+    const key=await deriveKey(code);
+    // sanity: try decrypting one record if any exist (detects wrong code fast-ish)
+    DB=DB||await idbOpen();
+    KEY=key; CODE=code;
+    await loadAll();
+    if(remember) localStorage.setItem('mavpad.code',code);
+    $('#lock').hidden=true; $('#app').hidden=false;
+    renderSidebar(); openFirstNote(); applyTheme(theme,false);
+    toast('Unlocked 🔓  AES-256 active');
+  }catch(e){
+    $('#lock-error').textContent='Could not unlock: '+(e&&e.message?e.message:e);
+    KEY=null; CODE=null;
+  }
+  btn.disabled=false; btn.textContent='Unlock';
+}
+function lock(){
+  KEY=null; CODE=null; topics.clear(); notes.clear(); curNoteId=null;
+  stopSync();
+  $('#app').hidden=true; $('#lock').hidden=false;
+  $('#code-input').value=''; $('#lock-error').textContent='';
+}
+
+/* ---------- sidebar ---------- */
+function renderSidebar(){
+  const q=curTopicFilter.trim().toLowerCase();
+  const box=$('#topic-list'); box.innerHTML='';
+  for(const t of liveTopics()){
+    let ns=liveNotes(t.id);
+    if(q) ns=ns.filter(n=>(n.title+' '+stripTags(n.html)).toLowerCase().includes(q));
+    if(q&&!ns.length) continue;
+    const div=document.createElement('div');
+    div.className='topic'+(t.collapsed&&!q?'':' open');
+    div.dataset.id=t.id;
+    const head=document.createElement('div'); head.className='topic-head';
+    head.innerHTML='<button class="chev" title="Collapse">▶</button><span class="topic-name"></span><span class="topic-count"></span><button class="icon-btn add-note" title="New note in this topic">＋</button><button class="icon-btn topic-menu" title="Topic options">⋯</button>';
+    head.querySelector('.topic-name').textContent=t.name;
+    head.querySelector('.topic-count').textContent=liveNotes(t.id).length;
+    head.querySelector('.chev').onclick=e=>{e.stopPropagation(); toggleTopic(t.id);};
+    head.querySelector('.topic-name').onclick=()=>toggleTopic(t.id);
+    head.querySelector('.add-note').onclick=e=>{e.stopPropagation(); newNote(t.id);};
+    head.querySelector('.topic-menu').onclick=e=>{e.stopPropagation(); topicMenu(e.clientX,e.clientY,t);};
+    div.appendChild(head);
+    const list=document.createElement('div'); list.className='topic-notes';
+    if(!ns.length){ const em=document.createElement('div'); em.className='empty-notes'; em.textContent='No notes yet'; list.appendChild(em); }
+    for(const n of ns){
+      const b=document.createElement('button');
+      b.className='note-row'+(n.id===curNoteId?' active':'');
+      b.dataset.id=n.id;
+      const title=document.createElement('span'); title.className='nr-title'; title.textContent=n.title||'Untitled';
+      const meta=document.createElement('span'); meta.className='nr-meta'; meta.textContent=ago(n.updatedAt);
+      const sn=document.createElement('span'); sn.className='nr-snippet'; sn.textContent=stripTags(n.html).slice(0,60);
+      b.append(title,meta,sn);
+      b.onclick=()=>openNote(n.id);
+      b.oncontextmenu=e=>{e.preventDefault(); noteMenu(e.clientX,e.clientY,n);};
+      list.appendChild(b);
+    }
+    div.appendChild(list);
+    box.appendChild(div);
+  }
+}
+async function toggleTopic(id){
+  const t=topics.get(id); if(!t) return;
+  t.collapsed=!t.collapsed; t.updatedAt=Date.now();
+  await putTopicRec(t); broadcastOp({kind:'topic',rec:await topicCipherRec(t)});
+  renderSidebar();
+}
+function openFirstNote(){
+  const ns=liveNotes(); 
+  if(ns.length) openNote(ns[0].id); else { curNoteId=null; $('#note-title').value=''; $('#editor').innerHTML=''; updateStatusbar(); }
+}
+function openNote(id){
+  const n=notes.get(id); if(!n) return openFirstNote();
+  curNoteId=id;
+  $('#note-title').value=n.title||'';
+  $('#editor').innerHTML=sanitize(n.html||'');
+  document.querySelectorAll('.note-row').forEach(r=>r.classList.toggle('active',r.dataset.id===id));
+  updateStatusbar();
+  if(window.innerWidth<=820) $('#sidebar').classList.remove('open');
+}
+function updateStatusbar(){
+  const n=notes.get(curNoteId);
+  $('#wordcount').textContent=n? wordCount(n.html)+' words':'';
+  $('#note-time').textContent=n? 'Updated '+fmtTime(n.updatedAt):'';
+}
+function markSaved(){
+  $('#savestate').textContent='✓ Saved '+new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+}
+
+/* ---------- notes CRUD ---------- */
+async function newNote(topicId){
+  topicId=topicId||'general';
+  const n={id:nid(),topicId,title:'',html:'',updatedAt:Date.now(),deleted:false};
+  notes.set(n.id,n); await putNoteRec(n);
+  broadcastOp({kind:'note',rec:await noteCipherRec(n)});
+  const t=topics.get(topicId); if(t&&t.collapsed){ t.collapsed=false; await putTopicRec(t); broadcastOp({kind:'topic',rec:await topicCipherRec(t)}); }
+  renderSidebar(); openNote(n.id);
+  $('#note-title').focus();
+}
+async function saveCurrentNote(){
+  const n=notes.get(curNoteId); if(!n||!KEY) return;
+  n.title=$('#note-title').value;
+  n.html=$('#editor').innerHTML;
+  n.updatedAt=Date.now();
+  await putNoteRec(n);
+  broadcastOp({kind:'note',rec:await noteCipherRec(n)});
+  markSaved(); updateStatusbar();
+  // light sidebar refresh (titles/times) without full rebuild churn:
+  renderSidebar();
+}
+function queueSave(){
+  $('#savestate').textContent='● Editing…';
+  clearTimeout(saveTimer); saveTimer=setTimeout(saveCurrentNote,700);
+}
+async function deleteNote(id){
+  const n=notes.get(id); if(!n) return;
+  notes.delete(id);
+  await idbPut(DB,'notes',{id:n.id,topicId:n.topicId,iv:'',data:'',updatedAt:Date.now(),deleted:true});
+  broadcastOp({kind:'note',rec:{id:n.id,topicId:n.topicId,iv:'',data:'',updatedAt:Date.now(),deleted:true}});
+  if(curNoteId===id) openFirstNote();
+  renderSidebar(); toast('Note deleted');
+}
+async function moveNoteTo(id,topicId){
+  const n=notes.get(id); if(!n) return;
+  n.topicId=topicId; n.updatedAt=Date.now();
+  await putNoteRec(n); broadcastOp({kind:'note',rec:await noteCipherRec(n)});
+  renderSidebar();
+}
+async function newTopic(){
+  const name=prompt('Topic name:','New topic');
+  if(!name||!name.trim()) return;
+  const t={id:nid(),name:name.trim().slice(0,60),collapsed:false,createdAt:Date.now(),updatedAt:Date.now(),deleted:false};
+  topics.set(t.id,t); await putTopicRec(t);
+  broadcastOp({kind:'topic',rec:await topicCipherRec(t)});
+  renderSidebar();
+}
+async function renameTopic(id){
+  const t=topics.get(id); if(!t) return;
+  const name=prompt('Rename topic:',t.name);
+  if(!name||!name.trim()||name.trim()===t.name) return;
+  t.name=name.trim().slice(0,60); t.updatedAt=Date.now();
+  await putTopicRec(t); broadcastOp({kind:'topic',rec:await topicCipherRec(t)});
+  renderSidebar();
+}
+async function deleteTopic(id){
+  if(id==='general'){ toast('The General topic cannot be deleted'); return; }
+  const t=topics.get(id); if(!t) return;
+  if(!confirm('Delete topic "'+t.name+'"? Its notes move to General.')) return;
+  for(const n of liveNotes(id)){ n.topicId='general'; n.updatedAt=Date.now(); await putNoteRec(n); broadcastOp({kind:'note',rec:await noteCipherRec(n)}); }
+  topics.delete(id);
+  await idbPut(DB,'topics',{id,iv:'',data:'',collapsed:false,createdAt:t.createdAt,updatedAt:Date.now(),deleted:true});
+  broadcastOp({kind:'topic',rec:{id,iv:'',data:'',collapsed:false,createdAt:t.createdAt,updatedAt:Date.now(),deleted:true}});
+  renderSidebar(); toast('Topic deleted — notes moved to General');
+}
+
+/* ---------- context menus ---------- */
+function showCtx(x,y,items){
+  const c=$('#ctx'); c.innerHTML=''; c.style.display='block';
+  for(const it of items){
+    const b=document.createElement('button'); b.textContent=it.label;
+    if(it.danger) b.classList.add('danger');
+    b.onclick=()=>{hideCtx(); it.fn();};
+    c.appendChild(b);
+  }
+  const r=c.getBoundingClientRect();
+  c.style.left=Math.min(x,innerWidth-r.width-8)+'px';
+  c.style.top=Math.min(y,innerHeight-r.height-8)+'px';
+}
+function hideCtx(){ $('#ctx').style.display='none'; }
+document.addEventListener('click',e=>{ if(!e.target.closest('#ctx')) hideCtx(); });
+function topicMenu(x,y,t){
+  const items=[
+    {label:'✏ Rename topic',fn:()=>renameTopic(t.id)},
+    {label:t.collapsed?'▾ Expand':'▸ Collapse',fn:()=>toggleTopic(t.id)},
+    {label:'＋ New note here',fn:()=>newNote(t.id)},
+  ];
+  if(t.id!=='general') items.push({label:'🗑 Delete topic',danger:true,fn:()=>deleteTopic(t.id)});
+  showCtx(x,y,items);
+}
+function noteMenu(x,y,n){
+  const items=[
+    {label:'📁 Move to topic…',fn:()=>{
+      const names=liveTopics().map(t=>t.name).join('\n');
+      const pick=prompt('Move to which topic?\n\n'+names, topics.get(n.topicId)?.name||'General');
+      if(!pick) return;
+      const t=liveTopics().find(t=>t.name.toLowerCase()===pick.trim().toLowerCase());
+      if(t) moveNoteTo(n.id,t.id); else toast('No topic named "'+pick+'"');
+    }},
+    {label:'🗑 Delete note',danger:true,fn:()=>{ if(confirm('Delete this note?')) deleteNote(n.id); }},
+  ];
+  showCtx(x,y,items);
+}
+
+/* ---------- themes ---------- */
+let theme=localStorage.getItem('mavpad.theme')||'dark';
+const THEMES=['light','dark','brown'], TICON={light:'☀️',dark:'🌙',brown:'🟤'};
+function applyTheme(t,save=true){
+  theme=t; document.documentElement.dataset.theme=t;
+  $('#theme-btn').textContent=TICON[t]||'🌙';
+  $('#theme-btn').title='Theme: '+t+' (tap to cycle)';
+  document.querySelectorAll('.theme-opt').forEach(b=>b.classList.toggle('sel',b.dataset.themePick===t));
+  if(save) localStorage.setItem('mavpad.theme',t);
+}
+
+/* ---------- editor wiring ---------- */
+function insertHtmlAtCursor(html){
+  const ed=$('#editor'); ed.focus();
+  const sel=getSelection();
+  if(sel.rangeCount){
+    const range=sel.getRangeAt(0); range.deleteContents();
+    const tmp=document.createElement('div'); tmp.innerHTML=sanitize(html);
+    const frag=document.createDocumentFragment(); let node,last=null;
+    while((node=tmp.firstChild)) last=frag.appendChild(node);
+    range.insertNode(frag);
+    if(last){ range.setStartAfter(last); range.collapse(true); sel.removeAllRanges(); sel.addRange(range); }
+  } else ed.innerHTML+=sanitize(html);
+  queueSave();
+}
+function fileToDataURL(file){
+  return new Promise((res,rej)=>{
+    const url=URL.createObjectURL(file), img=new Image();
+    img.onload=()=>{
+      URL.revokeObjectURL(url);
+      const MAX=1600; let w=img.width,h=img.height;
+      const sc=Math.min(1,MAX/Math.max(w,h)); w=Math.max(1,Math.round(w*sc)); h=Math.max(1,Math.round(h*sc));
+      const c=document.createElement('canvas'); c.width=w; c.height=h;
+      c.getContext('2d').drawImage(img,0,0,w,h);
+      res(c.toDataURL('image/jpeg',0.82));
+    };
+    img.onerror=()=>{URL.revokeObjectURL(url); rej(new Error('bad image'));};
+    img.src=url;
+  });
+}
+async function addImageFiles(files){
+  for(const f of files){
+    if(!f.type.startsWith('image/')) continue;
+    try{ insertHtmlAtCursor('<img src="'+await fileToDataURL(f)+'">'); }
+    catch(e){ toast('Could not read that image'); }
+  }
+}
+
+/* ---------- sync (peer-to-peer, ciphertext only) ---------- */
+let peer=null, conns=new Set(), peerLoading=null;
+function setSyncUI(state,text){
+  const pill=$('#sync-pill');
+  pill.classList.toggle('on',state==='on');
+  pill.classList.toggle('working',state==='working');
+  $('#sync-text').textContent=text;
+  $('#sync-dot').style.background=state==='on'?'#4caf50':state==='working'?'var(--accent)':'#8a8a8a';
+}
+function setSyncDetail(t){ $('#sync-detail').textContent=t; }
+function ensurePeerJS(){
+  if(window.Peer) return Promise.resolve();
+  if(peerLoading) return peerLoading;
+  peerLoading=new Promise((res,rej)=>{
+    const s=document.createElement('script');
+    s.src='https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js';
+    s.onload=()=>res(); s.onerror=()=>rej(new Error('PeerJS CDN unreachable'));
+    document.head.appendChild(s);
+  });
+  return peerLoading;
+}
+async function snapshot(){
+  return {t:'hello', notes:await idbAll(DB,'notes'), topics:await idbAll(DB,'topics')};
+}
+function broadcastOp(op){
+  if(!syncOn) return;
+  const m=Object.assign({t:'op'},op);
+  conns.forEach(c=>{ try{ if(c.open) c.send(m); }catch(e){} });
+}
+async function applyIncoming(kind,recs){
+  if(!recs||!recs.length) return;
+  const store=kind==='note'?'notes':'topics';
+  const local=new Map((await idbAll(DB,store)).map(r=>[r.id,r]));
+  const applied=mergeRecords(local,recs);
+  for(const id of applied) await idbPut(DB,store,local.get(id));
+  if(applied.length){
+    await loadAll(); renderSidebar(); refreshOpenNote();
+    toast('⬇ Synced '+applied.length+' change'+(applied.length>1?'s':'')+' from another device');
+  }
+}
+function refreshOpenNote(){
+  const n=notes.get(curNoteId);
+  if(!n){ if(curNoteId) openFirstNote(); return; }
+  const typing=document.activeElement===$('#editor')||document.activeElement===$('#note-title');
+  if(typing) toast('This note changed on another device','Load',()=>openNote(curNoteId));
+  else openNote(curNoteId);
+}
+async function handleSyncMsg(msg,conn){
+  if(!msg||!KEY) return;
+  if(msg.t==='hello'){
+    await applyIncoming('topics',msg.topics||[]);
+    await applyIncoming('notes',msg.notes||[]);
+    try{ conn.send(await snapshot()); }catch(e){}
+  }else if(msg.t==='op'){
+    await applyIncoming(msg.kind,[msg.rec]);
+  }
+}
+function wireConn(conn){
+  conns.add(conn);
+  conn.on('open',async()=>{
+    syncOn=true; setSyncUI('on','Synced');
+    setSyncDetail('Connected — changes sync live between devices.');
+    $('#sync-toggle-btn').textContent='⏹ Stop sync';
+    try{ conn.send(await snapshot()); }catch(e){}
+  });
+  conn.on('data',msg=>handleSyncMsg(msg,conn));
+  const gone=()=>{ conns.delete(conn); if(syncOn&&!conns.size&&peer) setSyncDetail('Waiting for another device with your code…'); };
+  conn.on('close',gone); conn.on('error',gone);
+}
+async function startSync(){
+  if(syncOn||!KEY) return;
+  setSyncUI('working','Connecting…');
+  try{ await ensurePeerJS(); }
+  catch(e){ setSyncUI('off','Offline'); toast('Sync needs internet the first time (loads PeerJS)'); return; }
+  const room=await roomIdFor(CODE);
+  setSyncDetail('Looking for devices with your code…');
+  const p=new Peer(room);
+  p.on('open',()=>{
+    peer=p; syncOn=true; setSyncUI('on','Synced');
+    setSyncDetail('Hosting the sync room. On your other device: enter the same code, unlock, press Sync.');
+    $('#sync-toggle-btn').textContent='⏹ Stop sync';
+  });
+  p.on('connection',c=>wireConn(c));
+  p.on('error',err=>{
+    if(err&&err.type==='unavailable-id'){
+      try{ p.destroy(); }catch(e){}
+      const c2=new Peer();   // a device is already hosting — join it
+      c2.on('open',()=>{ peer=c2; wireConn(c2.connect(room,{reliable:true})); });
+      c2.on('error',()=>{ syncOn=false; setSyncUI('off','Offline'); setSyncDetail('Could not reach the other device. Is it online with sync on?'); $('#sync-toggle-btn').textContent='🔗 Start sync'; });
+    }else{
+      syncOn=false; setSyncUI('off','Offline');
+      setSyncDetail('Sync error: '+(err&&err.type||'unknown')+'. Try again.');
+      $('#sync-toggle-btn').textContent='🔗 Start sync';
+    }
+  });
+  p.on('disconnected',()=>{ try{ p.reconnect(); }catch(e){} });
+}
+function stopSync(){
+  syncOn=false;
+  conns.forEach(c=>{ try{ c.close(); }catch(e){} }); conns.clear();
+  if(peer){ try{ peer.destroy(); }catch(e){} peer=null; }
+  setSyncUI('off','Offline'); setSyncDetail('Sync is off.');
+  $('#sync-toggle-btn').textContent='🔗 Start sync';
+}
+
+/* ---------- backup ---------- */
+async function exportBackup(){
+  const pack=await encJSON(KEY,{app:'mavpad',v:1,exportedAt:Date.now(),notes:await idbAll(DB,'notes'),topics:await idbAll(DB,'topics')});
+  const blob=new Blob([JSON.stringify(pack)],{type:'application/json'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download='mavpad-backup-'+new Date().toISOString().slice(0,10)+'.json'; a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),8000);
+  toast('⬇ Encrypted backup exported');
+}
+async function importBackup(file){
+  try{
+    const d=await decJSON(KEY,JSON.parse(await file.text()));
+    if(!d||d.app!=='mavpad') throw new Error('bad file');
+    await applyIncoming('topics',d.topics||[]);
+    await applyIncoming('notes',d.notes||[]);
+    toast('⬆ Backup imported & merged');
+  }catch(e){ toast('Import failed — wrong code or bad file'); }
+}
+
+/* ---------- updates ---------- */
+async function checkUpdate(manual){
+  const box=$('#update-result');
+  if(manual) box.textContent='Checking…';
+  try{
+    const r=await fetch('https://api.github.com/repos/'+APP.repo+'/releases/latest');
+    if(!r.ok) throw new Error('http');
+    const j=await r.json();
+    const m=/^v(\d+)$/.exec(j.tag_name||'');
+    $('#update-dot').classList.remove('show');
+    if(m&&+m[1]>APP.code){
+      $('#update-dot').classList.add('show');
+      box.innerHTML='⬆ <b>Update available: '+esc(j.tag_name)+'</b><br><a href="'+esc(j.html_url)+'" target="_blank" rel="noopener">Get it on GitHub Releases</a>';
+      if(!manual) toast('MavPad update available','View',()=>window.open(j.html_url,'_blank'));
+    }else if(manual){
+      box.textContent='✓ You are on the latest version ('+APP.version+').';
+    }
+  }catch(e){ if(manual) box.textContent='Could not check — are you online?'; }
+}
+
+/* ---------- settings modal ---------- */
+function refreshCodeBox(show){
+  const box=$('#sync-code-box');
+  box.textContent=show&&CODE?CODE.match(/.{1,4}/g).join('-'):'••••-••••-••••-••••-••••';
+  $('#toggle-code-btn').textContent=show?'🙈 Hide':'👁 Show';
+  box.dataset.show=show?'1':'';
+}
+function openSettings(){
+  refreshCodeBox(false);
+  $('#about-ver').textContent=APP.name+' '+APP.version+' (build '+APP.code+') — single file, no account, no tracking.';
+  $('#modal').hidden=false;
+}
+function closeSettings(){ $('#modal').hidden=true; }
+
+/* ---------- init ---------- */
+function wireEvents(){
+  $('#unlock-btn').onclick=()=>{
+    const code=normCode($('#code-input').value);
+    if(code.length<12){ $('#lock-error').textContent='That code looks too short.'; return; }
+    unlock(code,$('#remember-code').checked);
+  };
+  $('#code-input').addEventListener('keydown',e=>{ if(e.key==='Enter') $('#unlock-btn').click(); });
+  $('#gen-code-btn').onclick=()=>{ $('#code-input').value=genCode(); $('#first-run').hidden=true; $('#unlock-btn').click(); };
+
+  $('#lock-btn').onclick=()=>{ if(confirm('Lock MavPad now?')) lock(); };
+  $('#theme-btn').onclick=()=>applyTheme(THEMES[(THEMES.indexOf(theme)+1)%THEMES.length]);
+  document.querySelectorAll('.theme-opt').forEach(b=>b.onclick=()=>applyTheme(b.dataset.themePick));
+  $('#settings-btn').onclick=openSettings;
+  $('#modal-close').onclick=closeSettings;
+  $('#modal').addEventListener('click',e=>{ if(e.target.id==='modal') closeSettings(); });
+  document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeSettings(); });
+
+  $('#menu-btn').onclick=()=>$('#sidebar').classList.toggle('open');
+  $('#new-topic-btn').onclick=newTopic;
+  $('#new-note-btn').onclick=()=>newNote();
+  $('#search').addEventListener('input',e=>{ curTopicFilter=e.target.value; renderSidebar(); });
+
+  $('#note-title').addEventListener('input',queueSave);
+  $('#editor').addEventListener('input',queueSave);
+  document.querySelectorAll('#toolbar .tb[data-cmd]').forEach(b=>{
+    b.addEventListener('mousedown',e=>e.preventDefault());
+    b.onclick=()=>{ $('#editor').focus(); document.execCommand(b.dataset.cmd,false,b.dataset.val||null); queueSave(); };
+  });
+  $('#img-btn').onclick=()=>$('#img-picker').click();
+  $('#img-picker').addEventListener('change',e=>{ addImageFiles([...e.target.files]); e.target.value=''; });
+  $('#link-btn').onclick=()=>{
+    const url=prompt('Link URL:','https://');
+    if(url){ $('#editor').focus(); document.execCommand('createLink',false,url); queueSave(); }
+  };
+  $('#editor').addEventListener('paste',e=>{
+    const items=e.clipboardData&&e.clipboardData.items;
+    if(!items) return;
+    for(const it of items){
+      if(it.type.startsWith('image/')){
+        e.preventDefault();
+        addImageFiles([it.getAsFile()]);
+        break;
+      }
+    }
+  });
+  $('#editor').addEventListener('dragover',e=>e.preventDefault());
+  $('#editor').addEventListener('drop',e=>{
+    e.preventDefault();
+    if(e.dataTransfer.files&&e.dataTransfer.files.length) addImageFiles([...e.dataTransfer.files]);
+  });
+
+  $('#copy-code-btn').onclick=async()=>{
+    if(!CODE) return;
+    try{ await navigator.clipboard.writeText(CODE.match(/.{1,4}/g).join('-')); toast('Code copied — keep it secret'); }
+    catch(e){ toast('Copy failed — long-press the code to copy'); }
+  };
+  $('#toggle-code-btn').onclick=()=>refreshCodeBox(!$('#sync-code-box').dataset.show);
+  $('#regen-code-btn').onclick=regenCode;
+  $('#sync-toggle-btn').onclick=()=>{ syncOn?stopSync():startSync(); };
+  $('#export-btn').onclick=exportBackup;
+  $('#import-btn').onclick=()=>$('#import-picker').click();
+  $('#import-picker').addEventListener('change',e=>{ if(e.target.files[0]) importBackup(e.target.files[0]); e.target.value=''; });
+  $('#check-update-btn').onclick=()=>checkUpdate(true);
+  $('#forget-btn').onclick=()=>{ localStorage.removeItem('mavpad.code'); toast('Code forgotten on this device — you will enter it next launch'); };
+  $('#wipe-btn').onclick=async()=>{
+    if(!confirm('WIPE EVERYTHING on this device? Notes, topics, everything. This cannot be undone.')) return;
+    if(!confirm('Last chance — really wipe all local data?')) return;
+    stopSync();
+    indexedDB.deleteDatabase(DBN);
+    localStorage.removeItem('mavpad.code');
+    location.reload();
+  };
+  $('#toast-act').onclick=()=>hideToast();
+}
+async function regenCode(){
+  if(!confirm('Generate a NEW sync code? Everything is re-encrypted with it. Your other devices must switch to the new code too.')) return;
+  toast('Re-encrypting everything…');
+  const newCode=genCode(), newKey=await deriveKey(newCode), oldKey=KEY;
+  stopSync();
+  for(const store of ['notes','topics']){
+    const recs=await idbAll(DB,store);
+    for(const r of recs){
+      if(r.deleted) continue;
+      try{
+        const plain=await decJSON(oldKey,r);
+        const p=await encJSON(newKey,plain);
+        await idbPut(DB,store,Object.assign({},r,{iv:p.iv,data:p.data}));
+      }catch(e){}
+    }
+  }
+  KEY=newKey; CODE=newCode;
+  if(localStorage.getItem('mavpad.code')) localStorage.setItem('mavpad.code',newCode);
+  await loadAll(); renderSidebar(); refreshCodeBox(true); openFirstNote();
+  toast('🎲 New code generated — update your other devices');
+}
+(async function init(){
+  applyTheme(theme,false);
+  wireEvents();
+  DB=await idbOpen();
+  const remembered=localStorage.getItem('mavpad.code');
+  if(remembered){
+    $('#code-input').value=remembered.match(/.{1,4}/g).join('-');
+    unlock(normCode(remembered),true);
+  }else{
+    $('#first-run').hidden=false;
+  }
+  if('serviceWorker' in navigator && location.protocol.startsWith('http')){
+    navigator.serviceWorker.register('sw.js').catch(()=>{});
+  }
+  setTimeout(()=>{ if(KEY) checkUpdate(false); },4000);
+})();
+</script>
+</body>
+</html>
