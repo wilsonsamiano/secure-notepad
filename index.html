@@ -40,6 +40,8 @@ input,select{font:inherit;color:var(--text)}
 #unlock-btn{background:var(--accent);color:var(--accent-ink);font-weight:700;border-radius:10px;padding:12px;width:100%;font-size:16px;margin-top:2px}
 #unlock-btn:hover{filter:brightness(1.08)}
 #unlock-btn:disabled{opacity:.55;cursor:wait}
+#install-btn{display:block;width:100%;margin-top:10px;background:transparent;color:var(--accent);border:1px solid var(--accent);font-weight:700;border-radius:10px;padding:11px;font-size:15px}
+#install-btn[hidden]{display:none}
 #lock-error{color:var(--danger);min-height:20px;font-size:13px;margin-top:10px}
 .lock-hint{font-size:12px;color:var(--muted);margin-top:6px;line-height:1.5}
 
@@ -172,6 +174,7 @@ input,select{font:inherit;color:var(--text)}
     <input id="code-input" placeholder="XXXX-XXXX-XXXX-XXXX-XXXX" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="24">
     <label class="remember"><input type="checkbox" id="remember-code" checked> Remember code on this device</label>
     <button id="unlock-btn">Unlock</button>
+    <button id="install-btn" hidden>Install app</button>
     <p id="lock-error"></p>
     <p class="lock-hint">Use the <b>same code on every device</b>, then tap <b>Sync</b> in ⚙ Settings to link them. Notes stay encrypted everywhere — even the sync relay only ever sees ciphertext.</p>
   </div>
@@ -308,6 +311,27 @@ input,select{font:inherit;color:var(--text)}
 
 <script>
 'use strict';
+if('serviceWorker' in navigator && location.protocol.startsWith('http')){
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
+let deferredInstall=null;
+window.addEventListener('beforeinstallprompt', (e)=>{
+  deferredInstall=e;
+  const b=document.getElementById('install-btn');
+  if(b) b.hidden=false;
+});
+window.addEventListener('appinstalled', ()=>{
+  deferredInstall=null;
+  const b=document.getElementById('install-btn');
+  if(b) b.hidden=true;
+});
+document.getElementById('install-btn').onclick=async()=>{
+  if(!deferredInstall) return;
+  deferredInstall.prompt();
+  try{ await deferredInstall.userChoice; }catch(err){}
+  deferredInstall=null;
+  document.getElementById('install-btn').hidden=true;
+};
 /* ================= MavPad core ================= */
 /*__APP_START__*/
 const APP = {
@@ -981,9 +1005,6 @@ async function regenCode(){
     unlock(normCode(remembered),true);
   }else{
     $('#first-run').hidden=false;
-  }
-  if('serviceWorker' in navigator && location.protocol.startsWith('http')){
-    navigator.serviceWorker.register('sw.js').catch(()=>{});
   }
   setTimeout(()=>{ if(KEY) checkUpdate(false); },4000);
 })();
