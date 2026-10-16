@@ -311,7 +311,7 @@ input,select{font:inherit;color:var(--text)}
 
 <script>
 'use strict';
-if('serviceWorker' in navigator && location.protocol.startsWith('http')){
+if('serviceWorker' in navigator && location.protocol.startsWith('http') && !window.MavPadAndroid){
   navigator.serviceWorker.register('sw.js').catch(()=>{});
 }
 let deferredInstall=null;
@@ -849,9 +849,16 @@ function stopSync(){
 /* ---------- backup ---------- */
 async function exportBackup(){
   const pack=await encJSON(KEY,{app:'mavpad',v:1,exportedAt:Date.now(),notes:await idbAll(DB,'notes'),topics:await idbAll(DB,'topics')});
-  const blob=new Blob([JSON.stringify(pack)],{type:'application/json'});
+  const text=JSON.stringify(pack);
+  const name='mavpad-backup-'+new Date().toISOString().slice(0,10)+'.json';
+  if(window.MavPadAndroid&&typeof MavPadAndroid.saveTextFile==='function'){
+    MavPadAndroid.saveTextFile(name, text);
+    toast('⬇ Encrypted backup exported');
+    return;
+  }
+  const blob=new Blob([text],{type:'application/json'});
   const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
-  a.download='mavpad-backup-'+new Date().toISOString().slice(0,10)+'.json'; a.click();
+  a.download=name; a.click();
   setTimeout(()=>URL.revokeObjectURL(a.href),8000);
   toast('⬇ Encrypted backup exported');
 }

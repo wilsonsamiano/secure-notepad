@@ -1,0 +1,54 @@
+plugins {
+    id "com.android.application"
+}
+
+android {
+    namespace "com.wilsonsamiano.mavpad"
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "com.wilsonsamiano.mavpad"
+        minSdk 24
+        targetSdk 34
+        versionCode 1
+        versionName "0.1.0"
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    signingConfigs {
+        release {
+            storeFile file(System.getenv("MAVPAD_KEYSTORE") ?: "missing.keystore")
+            storePassword System.getenv("MAVPAD_STORE_PASS") ?: ""
+            keyAlias System.getenv("MAVPAD_KEY_ALIAS") ?: "mavpad"
+            keyPassword System.getenv("MAVPAD_KEY_PASS") ?: ""
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            signingConfig signingConfigs.release
+        }
+    }
+}
+
+tasks.register("syncWeb", Copy) {
+    from(rootProject.projectDir.parentFile) {
+        include "index.html"
+        include "sw.js"
+        include "manifest.webmanifest"
+        include "icons/**"
+    }
+    into layout.projectDirectory.dir("src/main/assets/www")
+}
+
+tasks.named("preBuild").configure { dependsOn("syncWeb") }
+
+dependencies {
+    implementation "androidx.webkit:webkit:1.12.1"
+    implementation "androidx.core:core:1.13.1"
+}
