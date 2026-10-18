@@ -1,0 +1,50 @@
+{
+  "name": "mavpad",
+  "productName": "MavPad",
+  "version": "0.2.0",
+  "description": "End-to-end encrypted notepad",
+  "main": "main.js",
+  "author": "Wilson Samiano",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "stage": "node stage.js",
+    "start": "node stage.js && electron .",
+    "dist": "node stage.js && electron-builder --publish never"
+  },
+  "devDependencies": {
+    "electron": "33.4.11",
+    "electron-builder": "25.1.8"
+  },
+  "build": {
+    "appId": "com.wilsonsamiano.mavpad",
+    "productName": "MavPad",
+    "asar": true,
+    "directories": { "output": "dist" },
+    "files": ["main.js", "preload.js", "www/**/*"],
+    "linux": {
+      "target": ["AppImage", "deb"],
+      "category": "Office",
+      "icon": "www/icons/icon-512.png",
+      "artifactName": "MavPad-${version}-linux.${ext}"
+    },
+    "win": {
+      "target": ["nsis"],
+      "icon": "www/icons/icon-512.png",
+      "artifactName": "MavPad-${version}-windows.${ext}"
+    },
+    "mac": {
+      "target": ["dmg", "zip"],
+      "icon": "www/icons/icon-512.png",
+      "category": "public.app-category.productivity",
+      "artifactName": "MavPad-${version}-mac.${ext}",
+      "identity": null
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "perMachine": false
+    },
+    "dmg": { "writeUpdateInfo": false }
+  }
+}
