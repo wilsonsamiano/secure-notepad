@@ -4,7 +4,8 @@
   "version": "0.2.0",
   "description": "End-to-end encrypted notepad",
   "main": "main.js",
-  "author": "Wilson Samiano",
+  "author": "Wilson Samiano <163815440+wilsonsamiano@users.noreply.github.com>",
+  "homepage": "https://github.com/wilsonsamiano/secure-notepad",
   "license": "MIT",
   "private": true,
   "scripts": {
@@ -25,17 +26,17 @@
     "linux": {
       "target": ["AppImage", "deb"],
       "category": "Office",
-      "icon": "www/icons/icon-512.png",
+      "icon": "icon.png",
       "artifactName": "MavPad-${version}-linux.${ext}"
     },
     "win": {
       "target": ["nsis"],
-      "icon": "www/icons/icon-512.png",
+      "icon": "icon.png",
       "artifactName": "MavPad-${version}-windows.${ext}"
     },
     "mac": {
       "target": ["dmg", "zip"],
-      "icon": "www/icons/icon-512.png",
+      "icon": "icon.png",
       "category": "public.app-category.productivity",
       "artifactName": "MavPad-${version}-mac.${ext}",
       "identity": null
