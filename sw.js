@@ -1,5 +1,5 @@
 /* MavPad service worker — offline-first app shell */
-const CACHE = 'mavpad-v2';
+const CACHE = 'mavpad-v3';
 const CORE = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png'];
 
 self.addEventListener('install', e => {
@@ -26,6 +26,21 @@ self.addEventListener('fetch', e => {
   const u = new URL(e.request.url);
   if (u.origin !== location.origin) return;
   e.respondWith((async () => {
+    const nav = e.request.mode === 'navigate' || u.pathname.endsWith('/') || u.pathname.endsWith('index.html');
+    if (nav) {
+      try {
+        const res = await fetch(e.request);
+        if (res && res.ok) {
+          const copy = res.clone();
+          caches.open(CACHE).then(c => c.put(e.request, copy)).catch(() => {});
+        }
+        return res;
+      } catch (err) {
+        const hit = await caches.match(e.request) || await caches.match('./index.html');
+        if (hit) return hit;
+        throw err;
+      }
+    }
     const hit = await caches.match(e.request);
     if (hit) return hit;
     try {

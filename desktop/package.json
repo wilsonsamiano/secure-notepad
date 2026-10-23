@@ -1,7 +1,7 @@
 {
   "name": "mavpad",
   "productName": "MavPad",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "End-to-end encrypted notepad",
   "main": "main.js",
   "author": "Wilson Samiano <163815440+wilsonsamiano@users.noreply.github.com>",

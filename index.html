@@ -55,7 +55,21 @@ input,select{font:inherit;color:var(--text)}
 #search{margin:4px 14px 10px;background:var(--editor);border:1px solid var(--border);border-radius:9px;padding:9px 12px;width:calc(100% - 28px)}
 #search:focus{outline:2px solid var(--accent)}
 #topic-list{flex:1;overflow-y:auto;padding:2px 8px 12px}
-.side-foot{padding:10px 14px;border-top:1px solid var(--border);display:flex;gap:8px}
+.side-foot{padding:10px 14px;border-top:1px solid var(--border);display:flex;gap:8px;flex-wrap:wrap}
+#pass-btn{flex-basis:100%}
+#pass-view{flex:1;overflow:auto;padding:14px 16px 24px}
+#pass-view[hidden]{display:none}
+#pass-search{flex:1;min-width:140px;background:var(--editor);border:1px solid var(--border);border-radius:9px;padding:8px 10px}
+.pass-row{display:block;width:100%;text-align:left;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--editor);margin-bottom:8px}
+.pass-row:hover{border-color:var(--accent)}
+.pass-row b{display:block;font-size:15px}
+.pass-row span{display:block;font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pass-help{font-size:13px;color:var(--muted);line-height:1.55;margin-top:8px}
+.pass-help p{margin:0 0 8px}
+.pass-help code{color:var(--accent)}
+#pass-editor input,#pass-editor textarea{width:100%;background:var(--editor);border:1px solid var(--border);border-radius:9px;padding:9px 10px}
+#pass-editor label{display:block;font-size:12px;color:var(--muted);margin:8px 0 4px}
+#pw-pass{flex:1;min-width:0}
 .btn{background:var(--accent);color:var(--accent-ink);font-weight:700;border-radius:9px;padding:9px 12px;flex:1}
 .btn:hover{filter:brightness(1.08)}
 .btn.ghost{background:transparent;color:var(--text);border:1px solid var(--border);font-weight:600}
@@ -196,6 +210,7 @@ input,select{font:inherit;color:var(--text)}
     <div class="side-foot">
       <button class="btn" id="new-topic-btn">+ Topic</button>
       <button class="btn ghost" id="new-note-btn">+ Note</button>
+      <button class="btn ghost" id="pass-btn">🔑 Passwords</button>
     </div>
   </aside>
 
@@ -230,6 +245,20 @@ input,select{font:inherit;color:var(--text)}
       <input type="file" id="img-picker" accept="image/*" multiple hidden>
     </div>
     <div id="editor-wrap"><div id="editor" contenteditable="true" spellcheck="true"></div></div>
+    <div id="pass-view" hidden>
+      <div class="row">
+        <input id="pass-search" placeholder="Search logins" autocomplete="off">
+        <button class="btn small" id="pass-add">+ Add</button>
+        <button class="btn ghost small" id="pass-import">Import CSV</button>
+        <input type="file" id="pass-file" accept=".csv,text/csv,text/plain" hidden>
+      </div>
+      <div id="pass-list"></div>
+      <div class="pass-help">
+        <p><b>Apple Passwords.</b> On a Mac signed into the same Apple ID, open the Passwords app and choose File → Export All Passwords to File. Import that CSV here, then delete the file. It is not encrypted. iPhone and iPad do not export this list — use the Mac.</p>
+        <p><b>Brave.</b> Brave Sync cannot be read from another app. On a computer where Brave is signed in, open <code>brave://settings/passwords</code>, open the menu next to Saved passwords, and choose Export passwords. Import the CSV here, then delete it. Passwords you save in Brave later need another export.</p>
+        <p>Logins stay in this notebook, encrypted with your sync code. A pad invite never includes them.</p>
+      </div>
+    </div>
     <footer id="statusbar">
       <span id="wordcount"></span>
       <span id="savestate"></span>
@@ -238,6 +267,33 @@ input,select{font:inherit;color:var(--text)}
       <a id="bmc-foot" href="https://buymeacoffee.com/wilsonsamiano" target="_blank" rel="noopener">☕ Buy me a coffee</a>
     </footer>
   </main>
+</div>
+
+<div id="pass-modal" hidden>
+  <div class="modal-card">
+    <div class="modal-head"><h2 id="pass-modal-title">Password</h2><button class="icon-btn" id="pass-close">✕</button></div>
+    <div class="modal-body" id="pass-editor">
+      <label>Name</label><input id="pw-title" autocomplete="off">
+      <label>Website</label><input id="pw-url" autocomplete="off" inputmode="url">
+      <label>Username</label><input id="pw-user" autocomplete="off">
+      <label>Password</label>
+      <div class="row">
+        <input id="pw-pass" type="password" autocomplete="new-password">
+        <button class="btn ghost small" id="pw-show" type="button">Show</button>
+        <button class="btn ghost small" id="pw-gen" type="button">Generate</button>
+        <button class="btn ghost small" id="pw-copy" type="button">Copy</button>
+      </div>
+      <label id="pw-otp-label" hidden>One-time setup (from Apple)</label>
+      <input id="pw-otp" hidden autocomplete="off">
+      <label>Notes</label>
+      <textarea id="pw-notes" rows="3"></textarea>
+      <div class="row" style="margin-top:12px">
+        <button class="btn small" id="pw-save">Save</button>
+        <button class="btn ghost small" id="pw-copy-user">Copy username</button>
+        <button class="btn danger small" id="pw-delete">Delete</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <div id="invite-modal" hidden>
@@ -365,8 +421,8 @@ document.getElementById('install-btn').onclick=async()=>{
 /*__APP_START__*/
 const APP = {
   name: 'MavPad',
-  version: 'beta 0.2.0',
-  code: 2,                       // versionCode — matches GitHub release tag vN
+  version: 'beta 0.3.0',
+  code: 3,                       // versionCode — matches GitHub release tag vN
   repo: 'wilsonsamiano/secure-notepad',
   bmc: 'https://buymeacoffee.com/wilsonsamiano'
 };
@@ -448,12 +504,13 @@ function mergeRecords(local, incoming){
 const DBN='mavpad';
 function idbOpen(){
   return new Promise((res,rej)=>{
-    const r=indexedDB.open(DBN,1);
+    const r=indexedDB.open(DBN,2);
     r.onupgradeneeded=e=>{
       const db=e.target.result;
-      db.createObjectStore('notes',{keyPath:'id'});
-      db.createObjectStore('topics',{keyPath:'id'});
-      db.createObjectStore('meta',{keyPath:'k'});
+      if(!db.objectStoreNames.contains('notes')) db.createObjectStore('notes',{keyPath:'id'});
+      if(!db.objectStoreNames.contains('topics')) db.createObjectStore('topics',{keyPath:'id'});
+      if(!db.objectStoreNames.contains('meta')) db.createObjectStore('meta',{keyPath:'k'});
+      if(!db.objectStoreNames.contains('passwords')) db.createObjectStore('passwords',{keyPath:'id'});
     };
     r.onsuccess=e=>res(e.target.result);
     r.onerror=()=>rej(r.error);
@@ -467,7 +524,8 @@ function idbDel(db,s,k){ return new Promise((res,rej)=>{ const q=db.transaction(
 let DB=null, KEY=null, CODE=null;
 const topics=new Map();   // id -> {id, name, shareCode, collapsed, createdAt, updatedAt, deleted}
 const notes=new Map();    // id -> {id, topicId, title, html, updatedAt, deleted}
-let curNoteId=null, curTopicFilter='';
+const passwords=new Map(); // id -> {id, title, url, username, password, notes, otp, updatedAt, deleted}
+let curNoteId=null, curTopicFilter='', passFilter='', editingPassId=null, showingPasswords=false;
 let saveTimer=null, syncOn=false;
 
 /* ---------- small utils ---------- */
@@ -515,7 +573,7 @@ async function putNoteRec(n){
   await idbPut(DB,'notes',{id:n.id, topicId:n.topicId, iv:pack.iv, data:pack.data, updatedAt:n.updatedAt, deleted:!!n.deleted});
 }
 async function loadAll(){
-  topics.clear(); notes.clear();
+  topics.clear(); notes.clear(); passwords.clear();
   for(const r of await idbAll(DB,'topics')){
     if(r.deleted) continue;
     try{ const d=await decJSON(KEY,r); topics.set(r.id,{id:r.id,name:d.name,shareCode:d.shareCode||null,collapsed:!!r.collapsed,createdAt:r.createdAt||r.updatedAt,updatedAt:r.updatedAt,deleted:false}); }
@@ -530,6 +588,15 @@ async function loadAll(){
       notes.set(r.id,{id:r.id,topicId:r.topicId,title:d.title||'',html:d.html||'',updatedAt:r.updatedAt,deleted:false});
     }
     catch(e){}
+  }
+  if(DB.objectStoreNames.contains('passwords')){
+    for(const r of await idbAll(DB,'passwords')){
+      if(r.deleted) continue;
+      try{
+        const d=await decJSON(KEY,r);
+        passwords.set(r.id,{id:r.id,title:d.title||'',url:d.url||'',username:d.username||'',password:d.password||'',notes:d.notes||'',otp:d.otp||'',updatedAt:r.updatedAt,deleted:false});
+      }catch(e){}
+    }
   }
   if(![...topics.values()].some(t=>t.id==='general')){
     const g={id:'general',name:'General',shareCode:null,collapsed:false,createdAt:1,updatedAt:Date.now(),deleted:false};
@@ -570,7 +637,8 @@ async function unlock(code, remember){
   btn.disabled=false; btn.textContent='Unlock';
 }
 function lock(){
-  KEY=null; CODE=null; topics.clear(); notes.clear(); curNoteId=null;
+  KEY=null; CODE=null; topics.clear(); notes.clear(); passwords.clear(); curNoteId=null;
+  showingPasswords=false;
   shareKeyCache.clear();
   stopSync();
   $('#app').hidden=true; $('#lock').hidden=false;
@@ -641,6 +709,7 @@ function toggleSidebar(){
   const s=$('#scrim'); if(s) s.classList.toggle('show', open && sidebarIsOverlay());
 }
 function openNote(id){
+  showNotes();
   const n=notes.get(id); if(!n) return openFirstNote();
   curNoteId=id;
   $('#note-title').value=n.title||'';
@@ -826,6 +895,175 @@ async function addImageFiles(files){
   }
 }
 
+/* ---------- passwords (vault only — never sent with a pad invite) ---------- */
+function showNotes(){
+  showingPasswords=false;
+  const pv=$('#pass-view'); if(pv) pv.hidden=true;
+  $('#editor-wrap').hidden=false;
+  $('#toolbar').hidden=false;
+  $('#note-title').hidden=false;
+}
+function showPasswords(){
+  showingPasswords=true;
+  $('#editor-wrap').hidden=true;
+  $('#toolbar').hidden=true;
+  $('#note-title').hidden=true;
+  $('#pass-view').hidden=false;
+  renderPasswords();
+  if(sidebarIsOverlay()) closeSidebar();
+}
+function hostOf(url){
+  try{ return new URL(String(url).includes('://')?url:'https://'+url).hostname.replace(/^www\./,''); }
+  catch(e){ return ''; }
+}
+function renderPasswords(){
+  const q=passFilter.trim().toLowerCase();
+  const box=$('#pass-list'); if(!box) return;
+  box.innerHTML='';
+  const list=[...passwords.values()].filter(p=>!p.deleted).sort((a,b)=>(a.title||a.url||'').localeCompare(b.title||b.url||''));
+  const shown=list.filter(p=>!q||(p.title+' '+p.url+' '+p.username).toLowerCase().includes(q));
+  if(!shown.length){
+    const p=document.createElement('p'); p.className='pass-help';
+    p.textContent=list.length?'No matches.':'No passwords yet. Add one, or import a CSV from Apple Passwords or Brave.';
+    box.appendChild(p);
+  }
+  for(const p of shown){
+    const b=document.createElement('button'); b.type='button'; b.className='pass-row';
+    const title=document.createElement('b'); title.textContent=p.title||hostOf(p.url)||'Untitled';
+    const user=document.createElement('span'); user.textContent=p.username||'No username';
+    const site=document.createElement('span'); site.textContent=p.url||'';
+    b.append(title,user,site);
+    b.onclick=()=>openPassword(p.id);
+    box.appendChild(b);
+  }
+  const wc=$('#wordcount'); if(wc&&showingPasswords) wc.textContent=list.length+(list.length===1?' password':' passwords');
+}
+async function putPasswordRec(p){
+  const pack=await encJSON(KEY,{title:p.title||'',url:p.url||'',username:p.username||'',password:p.password||'',notes:p.notes||'',otp:p.otp||''});
+  await idbPut(DB,'passwords',{id:p.id,iv:pack.iv,data:pack.data,updatedAt:p.updatedAt,deleted:!!p.deleted});
+}
+async function passwordCipherRec(p){
+  return (await idbAll(DB,'passwords')).find(r=>r.id===p.id);
+}
+function openPassword(id){
+  const p=id?passwords.get(id):null;
+  editingPassId=p?p.id:null;
+  $('#pass-modal-title').textContent=p?'Edit password':'New password';
+  $('#pw-title').value=p?p.title:'';
+  $('#pw-url').value=p?p.url:'';
+  $('#pw-user').value=p?p.username:'';
+  $('#pw-pass').value=p?p.password:'';
+  $('#pw-pass').type='password';
+  $('#pw-show').textContent='Show';
+  $('#pw-notes').value=p?p.notes:'';
+  $('#pw-otp').value=p?p.otp:'';
+  $('#pw-otp').hidden=!p||!p.otp;
+  $('#pw-otp-label').hidden=!p||!p.otp;
+  $('#pw-delete').hidden=!p;
+  $('#pass-modal').hidden=false;
+}
+async function savePassword(){
+  if(!KEY) return;
+  const existing=editingPassId&&passwords.get(editingPassId);
+  const p=existing||{id:'p'+nid(),deleted:false};
+  p.title=$('#pw-title').value.trim().slice(0,120);
+  p.url=$('#pw-url').value.trim().slice(0,500);
+  p.username=$('#pw-user').value.trim().slice(0,200);
+  p.password=$('#pw-pass').value;
+  p.notes=$('#pw-notes').value.slice(0,4000);
+  p.otp=($('#pw-otp').value||'').trim().slice(0,800);
+  if(!p.title&&!p.url&&!p.username){ toast('Add a name, website, or username'); return; }
+  p.updatedAt=Date.now(); p.deleted=false;
+  passwords.set(p.id,p);
+  await putPasswordRec(p);
+  await broadcastOp({kind:'password',rec:await passwordCipherRec(p)});
+  $('#pass-modal').hidden=true;
+  renderPasswords();
+  toast('Password saved');
+}
+async function deletePassword(){
+  const p=passwords.get(editingPassId); if(!p) return;
+  if(!confirm('Delete this password from MavPad?')) return;
+  passwords.delete(p.id);
+  const tomb={id:p.id,iv:'',data:'',updatedAt:Date.now(),deleted:true};
+  await idbPut(DB,'passwords',tomb);
+  await broadcastOp({kind:'password',rec:tomb});
+  $('#pass-modal').hidden=true;
+  renderPasswords();
+  toast('Password deleted');
+}
+let clipTimer=null;
+async function copySecret(text,label){
+  if(!text){ toast('Nothing to copy'); return; }
+  try{
+    await navigator.clipboard.writeText(text);
+    toast(label+' copied — clipboard clears in 30 seconds');
+    clearTimeout(clipTimer);
+    clipTimer=setTimeout(()=>{ navigator.clipboard.writeText('').catch(()=>{}); },30000);
+  }catch(e){ toast('Copy failed'); }
+}
+function genPassword(){
+  const A='ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%&*?';
+  const r=crypto.getRandomValues(new Uint8Array(20));
+  let s=''; for(const b of r) s+=A[b%A.length];
+  return s;
+}
+function parseCSV(text){
+  const rows=[]; let row=[], cur='', q=false;
+  const s=String(text||'').replace(/^\uFEFF/,'');
+  for(let i=0;i<s.length;i++){
+    const c=s[i];
+    if(q){
+      if(c==='"'){ if(s[i+1]==='"'){ cur+='"'; i++; } else q=false; }
+      else cur+=c;
+    }else if(c==='"') q=true;
+    else if(c===','){ row.push(cur); cur=''; }
+    else if(c==='\n'){ row.push(cur); rows.push(row); row=[]; cur=''; }
+    else if(c!=='\r') cur+=c;
+  }
+  if(cur.length||row.length){ row.push(cur); rows.push(row); }
+  return rows.filter(r=>r.some(x=>String(x).trim()));
+}
+async function importPasswordCSV(file){
+  const rows=parseCSV(await file.text());
+  if(rows.length<2){ toast('That CSV has no passwords'); return; }
+  const headers=rows[0].map(h=>String(h).trim().toLowerCase().replace(/\s+/g,' '));
+  const idx=names=>{ for(const n of names){ const i=headers.indexOf(n); if(i>=0) return i; } return -1; };
+  const iTitle=idx(['title','name']);
+  const iUrl=idx(['url','website','web site']);
+  const iUser=idx(['username','user','login','login_username']);
+  const iPass=idx(['password','pass']);
+  const iNotes=idx(['notes','note']);
+  const iOtp=idx(['otpauth','otp']);
+  if(iPass<0||(iTitle<0&&iUrl<0&&iUser<0)){ toast('Unrecognized CSV. Use an Apple Passwords or Brave export.'); return; }
+  let added=0, updated=0, skipped=0;
+  for(const cols of rows.slice(1)){
+    const get=i=>i>=0?String(cols[i]||'').trim():'';
+    const item={title:get(iTitle).slice(0,120),url:get(iUrl).slice(0,500),username:get(iUser).slice(0,200),password:get(iPass),notes:get(iNotes).slice(0,4000),otp:get(iOtp).slice(0,800)};
+    if(!item.password&&!item.username&&!item.title){ skipped++; continue; }
+    const key=(item.url+'|'+item.username).toLowerCase();
+    const existing=(item.url||item.username)?[...passwords.values()].find(p=>!p.deleted&&(p.url+'|'+p.username).toLowerCase()===key):null;
+    if(existing){
+      if(item.title) existing.title=item.title;
+      if(item.password) existing.password=item.password;
+      if(item.notes) existing.notes=item.notes;
+      if(item.otp) existing.otp=item.otp;
+      existing.updatedAt=Date.now();
+      await putPasswordRec(existing);
+      await broadcastOp({kind:'password',rec:await passwordCipherRec(existing)});
+      updated++;
+    }else{
+      const p=Object.assign({id:'p'+nid(),updatedAt:Date.now(),deleted:false},item);
+      passwords.set(p.id,p);
+      await putPasswordRec(p);
+      await broadcastOp({kind:'password',rec:await passwordCipherRec(p)});
+      added++;
+    }
+  }
+  renderPasswords();
+  toast('Imported '+added+' new, updated '+updated+(skipped?', skipped '+skipped:'')+'. Delete the CSV — it is not encrypted.');
+}
+
 /* ---------- sync (peer-to-peer, ciphertext only) ---------- */
 let peer=null, conns=new Set(), peerLoading=null;
 const padSlots=new Map();
@@ -849,7 +1087,7 @@ function ensurePeerJS(){
   return peerLoading;
 }
 async function snapshot(){
-  return {t:'hello', notes:await idbAll(DB,'notes'), topics:await idbAll(DB,'topics')};
+  return {t:'hello', notes:await idbAll(DB,'notes'), topics:await idbAll(DB,'topics'), passwords:await idbAll(DB,'passwords')};
 }
 async function broadcastOp(op){
   const m=Object.assign({t:'op'},op);
@@ -866,12 +1104,13 @@ async function broadcastOp(op){
 }
 async function applyIncoming(kind,recs){
   if(!recs||!recs.length) return;
-  const store=kind==='note'?'notes':'topics';
+  const store=kind==='note'||kind==='notes'?'notes':(kind==='password'||kind==='passwords')?'passwords':'topics';
   const local=new Map((await idbAll(DB,store)).map(r=>[r.id,r]));
   const applied=mergeRecords(local,recs);
   for(const id of applied) await idbPut(DB,store,local.get(id));
   if(applied.length){
     await loadAll(); renderSidebar(); refreshOpenNote();
+    if(showingPasswords) renderPasswords();
     toast('⬇ Synced '+applied.length+' change'+(applied.length>1?'s':'')+' from another device');
   }
 }
@@ -887,6 +1126,7 @@ async function handleSyncMsg(msg,conn){
   if(msg.t==='hello'){
     await applyIncoming('topics',msg.topics||[]);
     await applyIncoming('notes',msg.notes||[]);
+    await applyIncoming('passwords',msg.passwords||[]);
     if(!conn._answeredHello){
       conn._answeredHello=true;
       try{ conn.send(await snapshot()); }catch(e){}
@@ -1106,7 +1346,7 @@ async function joinSharedPad(raw){
 
 /* ---------- backup ---------- */
 async function exportBackup(){
-  const pack=await encJSON(KEY,{app:'mavpad',v:1,exportedAt:Date.now(),notes:await idbAll(DB,'notes'),topics:await idbAll(DB,'topics')});
+  const pack=await encJSON(KEY,{app:'mavpad',v:2,exportedAt:Date.now(),notes:await idbAll(DB,'notes'),topics:await idbAll(DB,'topics'),passwords:await idbAll(DB,'passwords')});
   const text=JSON.stringify(pack);
   const name='mavpad-backup-'+new Date().toISOString().slice(0,10)+'.json';
   if(window.MavPadAndroid&&typeof MavPadAndroid.saveTextFile==='function'){
@@ -1131,6 +1371,7 @@ async function importBackup(file){
     if(!d||d.app!=='mavpad') throw new Error('bad file');
     await applyIncoming('topics',d.topics||[]);
     await applyIncoming('notes',d.notes||[]);
+    await applyIncoming('passwords',d.passwords||[]);
     toast('⬆ Backup imported & merged');
   }catch(e){ toast('Import failed — wrong code or bad file'); }
 }
@@ -1195,7 +1436,25 @@ function wireEvents(){
     closeSidebar();
   });
   $('#new-topic-btn').onclick=newTopic;
-  $('#new-note-btn').onclick=()=>newNote();
+  $('#new-note-btn').onclick=()=>{ showNotes(); newNote(); };
+  $('#pass-btn').onclick=()=>showPasswords();
+  $('#pass-search').addEventListener('input',e=>{ passFilter=e.target.value; renderPasswords(); });
+  $('#pass-add').onclick=()=>openPassword(null);
+  $('#pass-import').onclick=()=>$('#pass-file').click();
+  $('#pass-file').addEventListener('change',e=>{ if(e.target.files[0]) importPasswordCSV(e.target.files[0]); e.target.value=''; });
+  $('#pass-close').onclick=()=>{ $('#pass-modal').hidden=true; };
+  $('#pass-modal').addEventListener('click',e=>{ if(e.target.id==='pass-modal') $('#pass-modal').hidden=true; });
+  $('#pw-save').onclick=()=>savePassword();
+  $('#pw-delete').onclick=()=>deletePassword();
+  $('#pw-show').onclick=()=>{
+    const el=$('#pw-pass');
+    const show=el.type==='password';
+    el.type=show?'text':'password';
+    $('#pw-show').textContent=show?'Hide':'Show';
+  };
+  $('#pw-gen').onclick=()=>{ $('#pw-pass').value=genPassword(); $('#pw-pass').type='text'; $('#pw-show').textContent='Hide'; };
+  $('#pw-copy').onclick=()=>copySecret($('#pw-pass').value,'Password');
+  $('#pw-copy-user').onclick=()=>copySecret($('#pw-user').value,'Username');
   $('#search').addEventListener('input',e=>{ curTopicFilter=e.target.value; renderSidebar(); });
 
   $('#note-title').addEventListener('input',queueSave);
@@ -1269,7 +1528,7 @@ async function regenCode(){
   toast('Re-encrypting everything…');
   const newCode=genCode(), newKey=await deriveKey(newCode), oldKey=KEY;
   stopSync();
-  for(const store of ['notes','topics']){
+  for(const store of ['notes','topics','passwords']){
     const recs=await idbAll(DB,store);
     for(const r of recs){
       if(r.deleted) continue;
