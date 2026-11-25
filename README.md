@@ -6,7 +6,7 @@ A single-file, end-to-end encrypted notepad. No account, no tracking.
 
 [![Buy Me A Coffee](https://img.shields.io/badge/☕-Buy%20me%20a%20coffee-FFDD00)](https://buymeacoffee.com/wilsonsamiano)
 
-**Current release:** [beta 0.3.0](https://github.com/wilsonsamiano/secure-notepad/releases/tag/v3)
+**Current version:** beta 0.4.0 (release tag `v4`)
 
 ## Install on a computer
 
@@ -19,7 +19,10 @@ That installs it like a desktop app. It works offline after the first load. Use 
 ## Features
 
 - 🔐 **AES-256-GCM encryption** — notes, topics, and passwords are encrypted on your device. The key is stretched from your sync code with PBKDF2 (310,000 iterations, SHA-256).
-- 🔗 **Sync starts after unlock** — same sync code on each device. Devices find each other peer-to-peer. The relay only sees ciphertext.
+- 🔗 **Sync starts after unlock** — same sync code on each device. Changes go through your own relays (see [`relay/`](relay/README.md), e.g. two Umbrels on Tailscale) and directly between online devices. Every device keeps a full encrypted copy, so any two devices can sync even with both relays down. Relays only hold ciphertext. Conflicts: the newest edit wins.
+- 🛰 **Relay roles** — one main relay, any number of backups. Any device can take over with **Set this device as main relay** (it pulls a full copy first). The sidebar shows the current main relay and this device's role.
+- 💬 **Team chat** and 📅 **shared calendar** — same sync code, same encryption, same relays. Display name per device, editable in Settings.
+- ⬇ **Export** notes or chat as plain text and the calendar as `.ics`. Every export is logged in a shared history (what, when, who).
 - 🤝 **Share one pad** — an invite code opens that pad only, not the whole notebook.
 - 🔑 **Passwords** — store logins, or import a CSV exported from Apple Passwords or Brave. Delete the CSV after import.
 - 📑 **Topics on the left** — collapse them, move notes, search.

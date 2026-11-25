@@ -1,5 +1,5 @@
 /* MavPad service worker — offline-first app shell */
-const CACHE = 'mavpad-v3';
+const CACHE = 'mavpad-v4';
 const CORE = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png'];
 
 self.addEventListener('install', e => {
