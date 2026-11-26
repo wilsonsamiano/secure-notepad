@@ -138,13 +138,24 @@ public class MainActivity extends Activity {
 
     /** Save a picture to Pictures/MavPad (Android 10+, no permission needed). */
     private void saveToGallery(String name, byte[] bytes, String mime) throws Exception {
+        saveToMediaStore(MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY),
+                Environment.DIRECTORY_PICTURES + "/MavPad", name, bytes, mime);
+    }
+
+    /** Save any file to Downloads/MavPad (Android 10+, no permission needed). */
+    private void saveToDownloads(String name, byte[] bytes, String mime) throws Exception {
+        saveToMediaStore(MediaStore.Downloads.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY),
+                Environment.DIRECTORY_DOWNLOADS + "/MavPad", name, bytes, mime);
+    }
+
+    private void saveToMediaStore(Uri collection, String folder, String name, byte[] bytes, String mime) throws Exception {
         ContentResolver resolver = getContentResolver();
         ContentValues values = new ContentValues();
-        values.put(MediaStore.Images.Media.DISPLAY_NAME, name);
-        values.put(MediaStore.Images.Media.MIME_TYPE, mime);
-        values.put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/MavPad");
-        values.put(MediaStore.Images.Media.IS_PENDING, 1);
-        Uri uri = resolver.insert(MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY), values);
+        values.put(MediaStore.MediaColumns.DISPLAY_NAME, name);
+        values.put(MediaStore.MediaColumns.MIME_TYPE, mime);
+        values.put(MediaStore.MediaColumns.RELATIVE_PATH, folder);
+        values.put(MediaStore.MediaColumns.IS_PENDING, 1);
+        Uri uri = resolver.insert(collection, values);
         if (uri == null) throw new Exception("insert failed");
         try (OutputStream os = resolver.openOutputStream(uri)) {
             if (os == null) throw new Exception("no stream");
@@ -154,7 +165,7 @@ public class MainActivity extends Activity {
             throw e;
         }
         values.clear();
-        values.put(MediaStore.Images.Media.IS_PENDING, 0);
+        values.put(MediaStore.MediaColumns.IS_PENDING, 0);
         resolver.update(uri, values, null, null);
     }
 
@@ -167,6 +178,24 @@ public class MainActivity extends Activity {
             String title = safe.endsWith(".json") ? "Save encrypted backup" : "Save export";
             byte[] bytes = contents == null ? new byte[0] : contents.getBytes(StandardCharsets.UTF_8);
             runOnUiThread(() -> shareFile(safe, bytes, mime, title));
+        }
+
+        /** File download. Returns "saved" (in Downloads/MavPad), "shared" (share sheet on Android 9 and older) or "error". */
+        @JavascriptInterface
+        public String saveFile(String filename, String base64, String mime) {
+            try {
+                String safe = safeName(filename, "mavpad-file");
+                String type = mime != null && !mime.isEmpty() ? mime : mimeFor(safe);
+                byte[] bytes = Base64.decode(base64, Base64.DEFAULT);
+                if (Build.VERSION.SDK_INT >= 29) {
+                    saveToDownloads(safe, bytes, type);
+                    return "saved";
+                }
+                runOnUiThread(() -> shareFile(safe, bytes, type, "Save file"));
+                return "shared";
+            } catch (Exception e) {
+                return "error";
+            }
         }
 
         /** Photo download. Returns "saved" (in Pictures/MavPad), "shared" (share sheet on Android 9 and older) or "error". */

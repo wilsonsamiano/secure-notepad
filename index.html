@@ -208,6 +208,18 @@ input,select{font:inherit;color:var(--text)}
 #ev-form{display:flex;flex-direction:column;gap:8px;margin-top:10px}
 #ev-form .row{margin:0}
 #ev-time{flex:0 0 130px}
+/* files */
+#files-view{flex:1;display:flex;flex-direction:column;min-height:0}
+#files-view[hidden]{display:none}
+#fl-body{flex:1;overflow-y:auto;padding:12px 14px}
+#fl-body.drop{outline:2px dashed var(--accent);outline-offset:-8px}
+.file-list{display:flex;flex-direction:column;gap:6px;max-width:860px}
+.file-row{display:flex;align-items:center;gap:10px;padding:9px 10px;border:1px solid var(--border);border-radius:10px;background:var(--panel);text-align:left;width:100%}
+.folder-row:hover{border-color:var(--accent)}
+.file-ic{font-size:24px;flex:none;width:30px;text-align:center}
+.file-info{flex:1;min-width:0;display:flex;flex-direction:column}
+.file-info b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.file-info span{font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 /* photos */
 #photo-view{flex:1;display:flex;flex-direction:column;min-height:0}
 #photo-view[hidden]{display:none}
@@ -312,6 +324,7 @@ input,select{font:inherit;color:var(--text)}
         <button class="vt" data-view="chat" title="Chat">💬<span class="vt-l"> Chat</span><span id="chat-badge" hidden></span></button>
         <button class="vt" data-view="calendar" title="Calendar">📅<span class="vt-l"> Calendar</span></button>
         <button class="vt" data-view="photos" title="Photos">🖼<span class="vt-l"> Photos</span></button>
+        <button class="vt" data-view="files" title="Files">📁<span class="vt-l"> Files</span></button>
       </nav>
       <input id="note-title" placeholder="Note title" autocomplete="off">
       <b id="view-label" hidden></b>
@@ -380,6 +393,19 @@ input,select{font:inherit;color:var(--text)}
           <textarea id="ev-notes" rows="2" placeholder="Notes (optional)"></textarea>
         </div>
       </div>
+    </div>
+    <div id="files-view" hidden>
+      <div class="view-head">
+        <button class="btn ghost small" id="fl-back" hidden>‹ Files</button>
+        <b id="fl-title">Files</b>
+        <span class="spacer"></span>
+        <button class="btn ghost small" id="fl-rename" hidden>Rename</button>
+        <button class="btn danger small" id="fl-del-folder" hidden>Delete folder</button>
+        <button class="btn ghost small" id="fl-new-folder">+ Folder</button>
+        <button class="btn small" id="fl-add">+ Add files</button>
+        <input type="file" id="fl-picker" multiple hidden>
+      </div>
+      <div id="fl-body"></div>
     </div>
     <div id="photo-view" hidden>
       <div class="view-head">
@@ -608,8 +634,8 @@ document.getElementById('install-btn').onclick=async()=>{
 /*__APP_START__*/
 const APP = {
   name: 'MavPad',
-  version: 'beta 0.5.0',
-  code: 5,                       // versionCode — matches GitHub release tag vN
+  version: 'beta 0.6.0',
+  code: 6,                       // versionCode — matches GitHub release tag vN
   repo: 'wilsonsamiano/secure-notepad',
   bmc: 'https://buymeacoffee.com/wilsonsamiano'
 };
@@ -617,7 +643,7 @@ const APP = {
 
 /*__CRYPTO_START__*/
 const te = new TextEncoder(), td = new TextDecoder();
-function b64(u8){ let s=''; for(let i=0;i<u8.length;i++) s+=String.fromCharCode(u8[i]); return btoa(s); }
+function b64(u8){ let s=''; for(let i=0;i<u8.length;i+=0x8000) s+=String.fromCharCode.apply(null,u8.subarray(i,i+0x8000)); return btoa(s); }
 function ub64(s){ const bin=atob(s); const u=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) u[i]=bin.charCodeAt(i); return u; }
 function rid(){ return (crypto.getRandomValues(new Uint32Array(2))[0].toString(36)+crypto.getRandomValues(new Uint32Array(2))[0].toString(36)).replace(/[^a-z0-9]/g,'').slice(0,12) || 'x'+Date.now().toString(36); }
 function nid(){ return 'n'+Date.now().toString(36)+Math.random().toString(36).slice(2,8); }
@@ -691,7 +717,7 @@ function mergeRecords(local, incoming){
 const DBN='mavpad';
 function idbOpen(){
   return new Promise((res,rej)=>{
-    const r=indexedDB.open(DBN,4);
+    const r=indexedDB.open(DBN,5);
     r.onupgradeneeded=e=>{
       const db=e.target.result;
       if(!db.objectStoreNames.contains('notes')) db.createObjectStore('notes',{keyPath:'id'});
@@ -699,7 +725,8 @@ function idbOpen(){
       if(!db.objectStoreNames.contains('meta')) db.createObjectStore('meta',{keyPath:'k'});
       if(!db.objectStoreNames.contains('passwords')) db.createObjectStore('passwords',{keyPath:'id'});
       for(const s of ['chat','events','exports','config','albums']) if(!db.objectStoreNames.contains(s)) db.createObjectStore(s,{keyPath:'id'});
-      for(const s of ['photos','pixels']) if(!db.objectStoreNames.contains(s)) db.createObjectStore(s,{keyPath:'id'}).createIndex('meta',['updatedAt','del']);
+      for(const s of ['files','folders']) if(!db.objectStoreNames.contains(s)) db.createObjectStore(s,{keyPath:'id'});
+      for(const s of ['photos','pixels','chunks']) if(!db.objectStoreNames.contains(s)) db.createObjectStore(s,{keyPath:'id'}).createIndex('meta',['updatedAt','del']);
     };
     r.onsuccess=e=>res(e.target.result);
     r.onerror=()=>rej(r.error);
@@ -829,7 +856,7 @@ async function unlock(code, remember){
     // sanity: try decrypting one record if any exist (detects wrong code fast-ish)
     DB=DB||await idbOpen();
     KEY=key; CODE=code;
-    await loadAll(); await loadNet(); await loadChat(); await loadEvents(); await loadExports(); await loadPhotos();
+    await loadAll(); await loadNet(); await loadChat(); await loadEvents(); await loadExports(); await loadPhotos(); await loadFiles();
     if(remember) localStorage.setItem('mavpad.code',code);
     $('#lock').hidden=true; $('#app').hidden=false;
     setView('notes'); renderSidebar(); openFirstNote(); applyTheme(theme,false);
@@ -847,6 +874,7 @@ function lock(){
   KEY=null; CODE=null; topics.clear(); notes.clear(); passwords.clear(); curNoteId=null;
   chatMsgs=[]; events=[]; exportLog=[]; NET={relays:[],roles:{},names:{},updatedAt:0};
   albums.clear(); photos.clear(); photoCache.clear(); phAlbum=null; closeViewer();
+  folders.clear(); files.clear(); flFolder=null;
   setView('notes');
   shareKeyCache.clear();
   $('#app').hidden=true; $('#lock').hidden=false;
@@ -1271,7 +1299,7 @@ async function importPasswordCSV(file){
    Any record newly applied here is forwarded to the other links (store and
    forward); a record already known is ignored, so forwarding stops by itself.
    Conflict rule: newest write wins (updatedAt); on a tie a delete wins. */
-const KIND_STORE={note:'notes',topic:'topics',password:'passwords',chat:'chat',event:'events',export:'exports',config:'config',album:'albums',photo:'photos',pixel:'pixels'};
+const KIND_STORE={note:'notes',topic:'topics',password:'passwords',chat:'chat',event:'events',export:'exports',config:'config',album:'albums',photo:'photos',pixel:'pixels',folder:'folders',file:'files',chunk:'chunks'};
 const STORE_KIND=Object.fromEntries(Object.entries(KIND_STORE).map(([k,s])=>[s,k]));
 const links=new Set();            // open links: {type:'relay'|'device', label, send(m), close(), q, last}
 let peerLoading=null, linkSeq=0;
@@ -1359,6 +1387,7 @@ async function afterIngest(applied){
   }
   if(kinds.has('event')){ await loadEvents(); renderCalendar(); }
   if(kinds.has('export')){ await loadExports(); renderExportHistory(); }
+  if(kinds.has('folder')||kinds.has('file')||kinds.has('chunk')){ await loadFiles(); renderFiles(); }
   if(kinds.has('album')||kinds.has('photo')||kinds.has('pixel')){
     await loadPhotos(); renderPhotos();
     const cur=viewerList[viewerIdx];
@@ -1909,11 +1938,13 @@ function setView(v){
   $('#chat-view').hidden=v!=='chat';
   $('#cal-view').hidden=v!=='calendar';
   $('#photo-view').hidden=v!=='photos';
+  $('#files-view').hidden=v!=='files';
   $('#view-label').hidden=v==='notes';
-  $('#view-label').textContent=v==='chat'?'💬 Team chat':v==='calendar'?'📅 Calendar':v==='photos'?'🖼 Photos':v==='passwords'?'🔑 Passwords':'';
+  $('#view-label').textContent=v==='chat'?'💬 Team chat':v==='calendar'?'📅 Calendar':v==='photos'?'🖼 Photos':v==='files'?'📁 Files':v==='passwords'?'🔑 Passwords':'';
   if(v==='chat'){ unreadChat=0; renderChat(); setTimeout(()=>{ const l=$('#chat-list'); l.scrollTop=l.scrollHeight; },0); }
   if(v==='calendar') renderCalendar();
   if(v==='photos') renderPhotos();
+  if(v==='files') renderFiles();
   if(v==='passwords') renderPasswords();
   if(v!=='notes'){ $('#wordcount').textContent=''; $('#note-time').textContent=''; } else updateStatusbar();
   renderViewTabs();
@@ -2061,7 +2092,7 @@ function renderExportHistory(){
   const box=$('#export-history'); if(!box) return;
   box.innerHTML='';
   if(!exportLog.length){ box.textContent='No exports yet.'; return; }
-  const icon={notes:'📝',chat:'💬',calendar:'📅',photo:'🖼'};
+  const icon={notes:'📝',chat:'💬',calendar:'📅',photo:'🖼',file:'📁'};
   for(const x of exportLog.slice(0,100)){
     const d=document.createElement('div'); d.className='hist-row';
     d.textContent=(icon[x.what]||'⬇')+' '+(x.what||'?')+' · '+fmtTime(x.at)+' · by '+(x.by||'Unnamed')+(x.count!=null?' · '+x.count+' item'+(x.count===1?'':'s'):'');
@@ -2413,6 +2444,188 @@ async function viewerDownload(){
   await logExport('photo',1);
 }
 
+/* ---------- files + folders ----------
+   folder: {name, by, createdAt}
+   file:   {name, type, size, folderId, parts, by, addedAt}   — small, loaded for the list
+   chunk:  raw bytes of one part (up to 4 MB), id "<fileId>.<n>", AES-256-GCM over the bytes
+   Splitting keeps every record well under the relay's per-record limit, so files up to
+   100 MB sync like everything else. folderId '' means the top level. */
+const FILE_PART=4*1024*1024, FILE_MAX=100*1024*1024;
+const folders=new Map(), files=new Map();
+let flFolder=null, chunkIds=new Set();       // null = top level, else folder id
+async function encBytes(key,u8){
+  const iv=crypto.getRandomValues(new Uint8Array(12));
+  const ct=await crypto.subtle.encrypt({name:'AES-GCM',iv},key,u8);
+  return {iv:b64(iv),data:b64(new Uint8Array(ct))};
+}
+async function decBytes(key,pack){ return new Uint8Array(await crypto.subtle.decrypt({name:'AES-GCM',iv:ub64(pack.iv)},key,ub64(pack.data))); }
+async function loadFiles(){
+  folders.clear(); files.clear();
+  for(const f of await decryptStore('folders')) folders.set(f.id,f);
+  for(const f of await decryptStore('files')) files.set(f.id,f);
+  chunkIds=new Set((await idbMeta(DB,'chunks')).filter(m=>!m.deleted).map(m=>m.id));
+  if(flFolder&&!folders.has(flFolder)) flFolder=null;
+}
+function fileHave(f){ let n=0; for(let i=0;i<f.parts;i++) if(chunkIds.has(f.id+'.'+i)) n++; return n; }
+function fmtSize(n){ return n<1024?n+' B':n<1048576?(n/1024).toFixed(n<10240?1:0)+' KB':(n/1048576).toFixed(n<10485760?1:0)+' MB'; }
+function fileIcon(f){
+  const t=(f.type||'').toLowerCase(), n=(f.name||'').toLowerCase();
+  if(t.startsWith('image/')) return '🖼'; if(t.startsWith('video/')) return '🎞'; if(t.startsWith('audio/')) return '🎵';
+  if(t==='application/pdf'||n.endsWith('.pdf')) return '📕';
+  if(/\.(zip|rar|7z|gz|tar)$/.test(n)) return '🗜';
+  if(/\.(xlsx?|csv|ods|numbers)$/.test(n)) return '📊';
+  if(/\.(docx?|odt|rtf|pages)$/.test(n)) return '📝';
+  if(/\.(pptx?|key|odp)$/.test(n)) return '📽';
+  if(t.startsWith('text/')||/\.(txt|md|json|log)$/.test(n)) return '📄';
+  return '📎';
+}
+function folderFiles(fid){ return [...files.values()].filter(f=>(folders.has(f.folderId)?f.folderId:'')===fid).sort((a,b)=>(a.name||'').localeCompare(b.name||'')); }
+function renderFiles(){
+  if(curView!=='files') return;
+  const body=$('#fl-body'); body.innerHTML='';
+  const inFolder=flFolder!==null;
+  $('#fl-back').hidden=!inFolder;
+  $('#fl-title').textContent=inFolder?'📁 '+(folders.get(flFolder)||{}).name:'Files';
+  $('#fl-new-folder').hidden=inFolder; $('#fl-rename').hidden=!inFolder; $('#fl-del-folder').hidden=!inFolder;
+  const list=document.createElement('div'); list.className='file-list';
+  if(!inFolder){
+    for(const fo of [...folders.values()].sort((a,b)=>(a.name||'').localeCompare(b.name||''))){
+      const inside=folderFiles(fo.id);
+      const row=document.createElement('button'); row.type='button'; row.className='file-row folder-row'; row.dataset.folder=fo.id;
+      const ic=document.createElement('span'); ic.className='file-ic'; ic.textContent='📁';
+      const info=document.createElement('span'); info.className='file-info';
+      const nm=document.createElement('b'); nm.textContent=fo.name;
+      const meta=document.createElement('span'); meta.textContent=inside.length+' file'+(inside.length===1?'':'s')+' · '+fmtSize(inside.reduce((s,f)=>s+(f.size||0),0));
+      info.append(nm,meta); row.append(ic,info);
+      row.onclick=()=>{ flFolder=fo.id; renderFiles(); };
+      list.appendChild(row);
+    }
+  }
+  const here=folderFiles(inFolder?flFolder:'');
+  for(const f of here){
+    const row=document.createElement('div'); row.className='file-row'; row.dataset.file=f.id;
+    const ic=document.createElement('span'); ic.className='file-ic'; ic.textContent=fileIcon(f);
+    const info=document.createElement('span'); info.className='file-info';
+    const nm=document.createElement('b'); nm.textContent=f.name;
+    const have=fileHave(f);
+    const meta=document.createElement('span');
+    meta.textContent=fmtSize(f.size||0)+' · '+(f.by||'Unnamed')+' · '+fmtTime(f.addedAt||f.updatedAt)+(have<f.parts?' · syncing '+Math.round(100*have/f.parts)+'%':'');
+    info.append(nm,meta);
+    const dl=document.createElement('button'); dl.className='btn ghost small fl-dl'; dl.textContent='⬇'; dl.title='Download'; dl.onclick=()=>downloadFile(f.id);
+    const more=document.createElement('button'); more.className='icon-btn fl-more'; more.textContent='⋯'; more.title='More';
+    more.onclick=e=>{ e.stopPropagation(); fileMenu(e.clientX,e.clientY,f); };
+    row.append(ic,info,dl,more);
+    row.oncontextmenu=e=>{ e.preventDefault(); fileMenu(e.clientX,e.clientY,f); };
+    list.appendChild(row);
+  }
+  body.appendChild(list);
+  if(!list.children.length){
+    const p=document.createElement('p'); p.className='pass-help';
+    p.textContent=inFolder?'This folder is empty. Tap “+ Add files” or drop files here.':'No files yet. Add files (up to 100 MB each) or make a folder. Files are encrypted with your sync code and shared with everyone on it.';
+    body.appendChild(p);
+  }
+}
+async function addFiles(list){
+  list=[...list].filter(Boolean);
+  if(!list.length||!KEY) return;
+  if(!needName()) return;
+  try{ if(navigator.storage&&navigator.storage.persist) navigator.storage.persist(); }catch(e){}
+  const fid=flFolder||'';
+  let done=0; const skipped=[];
+  for(const file of list){
+    if(file.size>FILE_MAX){ skipped.push(file.name); continue; }
+    toast('Encrypting '+file.name+' ('+(done+1)+' of '+list.length+')…');
+    const now=Date.now(), id='fl'+now.toString(36)+rid();
+    const parts=Math.max(1,Math.ceil(file.size/FILE_PART));
+    for(let i=0;i<parts;i++){
+      const u8=new Uint8Array(await file.slice(i*FILE_PART,(i+1)*FILE_PART).arrayBuffer());
+      const pack=await encBytes(KEY,u8);
+      const rec={id:id+'.'+i,iv:pack.iv,data:pack.data,updatedAt:now,deleted:false,del:0};
+      await idbPut(DB,'chunks',rec); publish([withKind('chunk',rec)]);
+    }
+    await putPhotoKind('file',id,{name:String(file.name||'file').slice(0,200),type:file.type||'',size:file.size,folderId:fid,parts,by:myName(),addedAt:now},now);
+    done++;
+  }
+  await loadFiles(); renderFiles();
+  toast('Added '+done+' file'+(done===1?'':'s')+(skipped.length?' · skipped (over 100 MB): '+skipped.join(', '):'')+(links.size||!done?'':' — they sync when a relay or device is reachable'));
+}
+async function saveFileMeta(f,changes){
+  const obj={name:f.name,type:f.type,size:f.size,folderId:f.folderId||'',parts:f.parts,by:f.by,addedAt:f.addedAt};
+  Object.assign(obj,changes);
+  await putPhotoKind('file',f.id,obj,Math.max(Date.now(),(f.updatedAt||0)+1));
+  await loadFiles(); renderFiles();
+}
+function fileMenu(x,y,f){
+  const items=[
+    {label:'⬇ Download',fn:()=>downloadFile(f.id)},
+    {label:'✏ Rename',fn:()=>{ const n=prompt('Rename file:',f.name); if(n&&n.trim()&&n.trim()!==f.name) saveFileMeta(f,{name:n.trim().slice(0,200)}); }},
+  ];
+  const cur=folders.has(f.folderId)?f.folderId:'';
+  if(cur) items.push({label:'📂 Move to top level',fn:()=>saveFileMeta(f,{folderId:''})});
+  for(const fo of [...folders.values()].sort((a,b)=>(a.name||'').localeCompare(b.name||''))) if(fo.id!==cur) items.push({label:'📁 Move to '+fo.name,fn:()=>saveFileMeta(f,{folderId:fo.id})});
+  items.push({label:'🗑 Delete',danger:true,fn:()=>deleteFile(f)});
+  showCtx(x,y,items);
+}
+async function deleteFile(f){
+  if(!confirm('Delete "'+f.name+'" for everyone on this sync code?')) return;
+  await tombstone('file',f.id);
+  for(let i=0;i<f.parts;i++) await tombstone('chunk',f.id+'.'+i);
+  await loadFiles(); renderFiles(); toast('File deleted');
+}
+async function newFolder(){
+  const name=prompt('Folder name:','');
+  if(!name||!name.trim()) return;
+  if(!needName()) return;
+  const now=Date.now(), id='fo'+now.toString(36)+rid();
+  await putPhotoKind('folder',id,{name:name.trim().slice(0,80),by:myName(),createdAt:now},now);
+  await loadFiles(); flFolder=id; renderFiles();
+}
+async function renameFolder(){
+  const fo=folders.get(flFolder); if(!fo) return;
+  const name=prompt('Rename folder:',fo.name);
+  if(!name||!name.trim()||name.trim()===fo.name) return;
+  await putPhotoKind('folder',fo.id,{name:name.trim().slice(0,80),by:fo.by,createdAt:fo.createdAt},Date.now());
+  await loadFiles(); renderFiles();
+}
+async function deleteFolder(){
+  const fo=folders.get(flFolder); if(!fo) return;
+  const inside=folderFiles(fo.id);
+  if(!confirm('Delete folder "'+fo.name+'" for everyone? Its '+inside.length+' file'+(inside.length===1?'':'s')+' move to the top level.')) return;
+  for(const f of inside){ const o={name:f.name,type:f.type,size:f.size,folderId:'',parts:f.parts,by:f.by,addedAt:f.addedAt}; await putPhotoKind('file',f.id,o,Math.max(Date.now(),(f.updatedAt||0)+1)); }
+  await tombstone('folder',fo.id);
+  flFolder=null; await loadFiles(); renderFiles();
+}
+async function fileBytes(f){
+  const out=new Uint8Array(f.size||0); let off=0;
+  for(let i=0;i<f.parts;i++){
+    const r=await idbGet(DB,'chunks',f.id+'.'+i);
+    if(!r||r.deleted) return null;
+    const u8=await decBytes(KEY,r); out.set(u8,off); off+=u8.length;
+  }
+  return out;
+}
+async function downloadFile(id){
+  const f=files.get(id); if(!f) return;
+  const have=fileHave(f);
+  if(have<f.parts){ toast('Still syncing this file ('+have+' of '+f.parts+' parts here). Try again in a moment.'); return; }
+  let bytes;
+  try{ bytes=await fileBytes(f); }catch(e){ bytes=null; }
+  if(!bytes){ toast('Could not decrypt this file'); return; }
+  const name=f.name||'file', type=f.type||'application/octet-stream';
+  if(window.MavPadAndroid){
+    // The Android WebView ignores download links: hand the bytes to the app instead.
+    if(typeof MavPadAndroid.saveFile!=='function'){ toast('Update the MavPad Android app to download files'); return; }
+    const r=MavPadAndroid.saveFile(name,b64(bytes),type);
+    if(r==='saved') toast('Saved to Downloads/MavPad');
+    else if(r!=='shared'){ toast('Could not save the file'); return; }
+  }else{
+    const url=URL.createObjectURL(new Blob([bytes],{type}));
+    const a=document.createElement('a'); a.href=url; a.download=name; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),30000);
+  }
+  await logExport('file',1);
+}
+
 /* ---------- backup ---------- */
 async function exportBackup(){
   const all={}; for(const s of Object.values(KIND_STORE)) all[s]=await idbAll(DB,s);
@@ -2442,7 +2655,7 @@ async function importBackup(file){
     await applyIncoming('topics',d.topics||[]);
     await applyIncoming('notes',d.notes||[]);
     await applyIncoming('passwords',d.passwords||[]);
-    for(const s of ['chat','events','exports','config','albums','photos','pixels']) await applyIncoming(s,d[s]||[]);
+    for(const s of Object.values(KIND_STORE)) if(!['notes','topics','passwords'].includes(s)) await applyIncoming(s,d[s]||[]);
     toast('⬆ Backup imported & merged');
   }catch(e){ toast('Import failed — wrong code or bad file'); }
 }
@@ -2526,6 +2739,16 @@ function wireEvents(){
   $('#role-member').onclick=()=>setThisDeviceRole('member');
   $('#exp-notes').onclick=exportNotes;
   $('#ph-back').onclick=()=>{ phAlbum=null; renderPhotos(); };
+  $('#fl-back').onclick=()=>{ flFolder=null; renderFiles(); };
+  $('#fl-new-folder').onclick=newFolder;
+  $('#fl-rename').onclick=renameFolder;
+  $('#fl-del-folder').onclick=deleteFolder;
+  $('#fl-add').onclick=()=>$('#fl-picker').click();
+  $('#fl-picker').addEventListener('change',e=>{ addFiles(e.target.files); e.target.value=''; });
+  const flb=$('#fl-body');
+  flb.addEventListener('dragover',e=>{ e.preventDefault(); flb.classList.add('drop'); });
+  flb.addEventListener('dragleave',()=>flb.classList.remove('drop'));
+  flb.addEventListener('drop',e=>{ e.preventDefault(); flb.classList.remove('drop'); if(e.dataTransfer.files&&e.dataTransfer.files.length) addFiles(e.dataTransfer.files); });
   $('#ph-new-album').onclick=newAlbum;
   $('#ph-rename').onclick=renameAlbum;
   $('#ph-del-album').onclick=deleteAlbum;
@@ -2644,8 +2867,7 @@ async function regenCode(){
     for(const r of recs){
       if(r.deleted) continue;
       try{
-        const plain=await decJSON(oldKey,r);
-        const p=await encJSON(newKey,plain);
+        const p=store==='chunks'?await encBytes(newKey,await decBytes(oldKey,r)):await encJSON(newKey,await decJSON(oldKey,r));
         await idbPut(DB,store,Object.assign({},r,{iv:p.iv,data:p.data}));
       }catch(e){}
     }
@@ -2653,7 +2875,7 @@ async function regenCode(){
   KEY=newKey; CODE=newCode;
   if(localStorage.getItem('mavpad.code')) localStorage.setItem('mavpad.code',newCode);
   photoCache.clear();
-  await loadAll(); await loadNet(); await loadChat(); await loadEvents(); await loadExports(); await loadPhotos();
+  await loadAll(); await loadNet(); await loadChat(); await loadEvents(); await loadExports(); await loadPhotos(); await loadFiles();
   renderSidebar(); refreshCodeBox(true); openFirstNote(); renderNet(); renderExportHistory();
   if(localStorage.getItem('mavpad.sync')!=='off') startSync();
   toast('🎲 New code generated — update your other devices');

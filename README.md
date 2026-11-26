@@ -6,7 +6,7 @@ A single-file, end-to-end encrypted notepad. No account, no tracking.
 
 [![Buy Me A Coffee](https://img.shields.io/badge/☕-Buy%20me%20a%20coffee-FFDD00)](https://buymeacoffee.com/wilsonsamiano)
 
-**Current version:** beta 0.5.0 (release tag `v5`)
+**Current version:** beta 0.6.0 (release tag `v6`)
 
 ## Install on a computer
 
@@ -23,6 +23,7 @@ That installs it like a desktop app. It works offline after the first load. Use 
 - 🛰 **Relay roles** — one main relay, any number of backups. Any device can take over with **Set this device as main relay** (it pulls a full copy first). The sidebar shows the current main relay and this device's role.
 - 💬 **Team chat** and 📅 **shared calendar** — same sync code, same encryption, same relays. Display name per device, editable in Settings.
 - 🖼 **Photos with albums** — add photos (resized to 2560 px), group them into albums, caption, move, download. Encrypted and shared with everyone on the sync code, like notes.
+- 📁 **Files with folders** — share any file up to 100 MB (split into encrypted parts so it syncs through the relays). Rename, move, download; on Android downloads go to Downloads/MavPad.
 - ⬇ **Export** notes or chat as plain text and the calendar as `.ics`. Every export is logged in a shared history (what, when, who).
 - 🤝 **Share one pad** — an invite code opens that pad only, not the whole notebook.
 - 🔑 **Passwords** — store logins, or import a CSV exported from Apple Passwords or Brave. Delete the CSV after import.
