@@ -12,6 +12,16 @@ It does see record ids, kinds (note/chat/event…), timestamps and sizes.
 - Data lives in `./data/<room>.json` (one file per sync code, ciphertext only).
 - Conflict rule: newest write wins; on a tie a delete wins.
 
+## Quick start on a Windows laptop
+
+1. Install Node.js (LTS) from nodejs.org and Tailscale from tailscale.com, and sign in to Tailscale.
+2. Download this repository (green **Code** button → **Download ZIP**) and extract it.
+3. Open the `relay` folder and double-click **`start-relay-windows.cmd`**. It installs the relay on
+   first run, publishes it with Tailscale Funnel (a public HTTPS address, so devices that are not on
+   your tailnet can reach it too), and prints the address to add in MavPad.
+
+Keep the window open; closing it stops the relay. The relay only stores ciphertext.
+
 ## Run it on an Umbrel
 
 SSH into the Umbrel (`ssh umbrel@umbrel.local`), copy this `relay/` folder over, then:
@@ -45,6 +55,10 @@ sudo docker exec -it <that-container-name> tailscale serve --bg --https=443 http
 
 (The Umbrel Tailscale app uses host networking, so `127.0.0.1:8787` is the relay.
 If Tailscale is installed directly on the host instead, run `sudo tailscale serve --bg --https=443 http://127.0.0.1:8787`.)
+
+To let devices that are **not** on your tailnet reach it (for example a teammate without the
+Tailscale app), use `tailscale funnel --bg 8787` instead of `tailscale serve`: it publishes the same
+HTTPS address on the public internet. The relay only holds ciphertext.
 
 Check it from a device on the tailnet: `https://umbrel-1.<your-tailnet>.ts.net/`
 should return `{"app":"mavpad-relay",...}`.
