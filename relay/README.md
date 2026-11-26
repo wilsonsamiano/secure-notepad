@@ -9,7 +9,7 @@ It does see record ids, kinds (note/chat/event…), timestamps and sizes.
 - Clients write to **every** relay they know, and the relays copy to each other
   (`PEERS`). If one Umbrel is down, the other keeps serving. When it comes back, the
   other relay and the devices fill it in.
-- Data lives in `./data/<room>.json` (one file per sync code, ciphertext only).
+- Data lives in `./data/<room>/`, one file per record (ciphertext only).
 - Conflict rule: newest write wins; on a tie a delete wins.
 
 ## Quick start on a Windows laptop
