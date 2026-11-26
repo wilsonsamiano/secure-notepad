@@ -2400,7 +2400,16 @@ async function viewerDownload(){
   const p=viewerList[viewerIdx]; if(!p) return;
   const src=await fullImage(p.id)||p.thumb;
   const name='mavpad-photo-'+new Date(p.takenAt||p.addedAt).toISOString().slice(0,10)+'-'+p.id.slice(-6)+'.jpg';
-  const a=document.createElement('a'); a.href=src; a.download=name; document.body.appendChild(a); a.click(); a.remove();
+  if(window.MavPadAndroid){
+    // The Android WebView ignores download links: hand the bytes to the app instead.
+    if(typeof MavPadAndroid.saveImage!=='function'){ toast('Update the MavPad Android app to download photos'); return; }
+    const m=/^data:([^;,]+);base64,(.*)$/.exec(src);
+    const r=m?MavPadAndroid.saveImage(name,m[2],m[1]):'error';
+    if(r==='saved') toast('Saved to Pictures/MavPad');
+    else if(r!=='shared'){ toast('Could not save the photo'); return; }
+  }else{
+    const a=document.createElement('a'); a.href=src; a.download=name; document.body.appendChild(a); a.click(); a.remove();
+  }
   await logExport('photo',1);
 }
 
