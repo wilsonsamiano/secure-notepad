@@ -6,7 +6,7 @@ A single-file, end-to-end encrypted notepad. No account, no tracking.
 
 [![Buy Me A Coffee](https://img.shields.io/badge/☕-Buy%20me%20a%20coffee-FFDD00)](https://buymeacoffee.com/wilsonsamiano)
 
-**Current version:** beta 0.4.0 (release tag `v4`)
+**Current version:** beta 0.5.0 (release tag `v5`)
 
 ## Install on a computer
 
@@ -22,6 +22,7 @@ That installs it like a desktop app. It works offline after the first load. Use 
 - 🔗 **Sync starts after unlock** — same sync code on each device. Changes go through your own relays (see [`relay/`](relay/README.md), e.g. two Umbrels on Tailscale) and directly between online devices. Every device keeps a full encrypted copy, so any two devices can sync even with both relays down. Relays only hold ciphertext. Conflicts: the newest edit wins.
 - 🛰 **Relay roles** — one main relay, any number of backups. Any device can take over with **Set this device as main relay** (it pulls a full copy first). The sidebar shows the current main relay and this device's role.
 - 💬 **Team chat** and 📅 **shared calendar** — same sync code, same encryption, same relays. Display name per device, editable in Settings.
+- 🖼 **Photos with albums** — add photos (resized to 2560 px), group them into albums, caption, move, download. Encrypted and shared with everyone on the sync code, like notes.
 - ⬇ **Export** notes or chat as plain text and the calendar as `.ics`. Every export is logged in a shared history (what, when, who).
 - 🤝 **Share one pad** — an invite code opens that pad only, not the whole notebook.
 - 🔑 **Passwords** — store logins, or import a CSV exported from Apple Passwords or Brave. Delete the CSV after import.

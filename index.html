@@ -208,6 +208,36 @@ input,select{font:inherit;color:var(--text)}
 #ev-form{display:flex;flex-direction:column;gap:8px;margin-top:10px}
 #ev-form .row{margin:0}
 #ev-time{flex:0 0 130px}
+/* photos */
+#photo-view{flex:1;display:flex;flex-direction:column;min-height:0}
+#photo-view[hidden]{display:none}
+#ph-body{flex:1;overflow-y:auto;padding:14px}
+#ph-body.drop{outline:2px dashed var(--accent);outline-offset:-8px}
+.album-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.album-card{display:flex;flex-direction:column;gap:3px;text-align:left;padding:0 0 8px;border:1px solid var(--border);border-radius:12px;background:var(--panel);overflow:hidden}
+.album-card:hover{border-color:var(--accent)}
+.album-card b,.album-card span{padding:0 10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.album-card span{font-size:12px;color:var(--muted)}
+.album-cover{aspect-ratio:1;background:var(--editor);display:flex;align-items:center;justify-content:center;font-size:34px;margin-bottom:5px}
+.album-cover img{width:100%;height:100%;object-fit:cover;display:block}
+.photo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:4px}
+.photo-tile{aspect-ratio:1;overflow:hidden;border-radius:6px;background:var(--editor);padding:0}
+.photo-tile img{width:100%;height:100%;object-fit:cover;display:block}
+.photo-tile:hover{outline:2px solid var(--accent)}
+#ph-viewer{position:fixed;inset:0;z-index:250;background:rgba(0,0,0,.92);display:flex;flex-direction:column;color:#eee}
+#ph-viewer[hidden]{display:none}
+.pv-top,.pv-foot{display:flex;align-items:center;gap:8px;padding:10px 14px;flex-wrap:wrap}
+.pv-top .spacer{flex:1}
+.pv-top .icon-btn{color:#eee}
+.pv-stage{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;gap:6px;padding:0 6px}
+#pv-img{max-width:calc(100% - 90px);max-height:100%;object-fit:contain;border-radius:6px}
+.pv-nav{font-size:34px;width:40px;height:70px;border-radius:10px;color:#eee}
+.pv-nav:hover:not(:disabled){background:rgba(255,255,255,.12)}
+.pv-nav:disabled{opacity:.2}
+.pv-foot{flex-direction:column;align-items:stretch}
+.pv-foot .row{margin:0;align-items:center}
+.pv-foot label{font-size:13px;color:#bbb}
+#pv-meta,#pv-status{font-size:12px;color:#aaa}
 /* relays */
 #role-line{font-size:11px;color:var(--muted);padding:6px 14px;border-top:1px solid var(--border);line-height:1.4}
 .relay-row{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--border);border-radius:10px;padding:9px 10px;margin-bottom:8px;flex-wrap:wrap}
@@ -221,6 +251,9 @@ input,select{font:inherit;color:var(--text)}
 
 @media (max-width:1100px), (hover: none) and (pointer: coarse){
   .vt-l{display:none}
+  #pv-img{max-width:100%}
+  .pv-nav{position:absolute;top:45%;background:rgba(0,0,0,.35)}
+  #pv-prev{left:4px} #pv-next{right:4px}
   #view-label{visibility:hidden;min-width:0}
   #sidebar{position:fixed;left:0;top:0;bottom:0;transform:translateX(-105%);transition:transform .22s;box-shadow:var(--shadow);z-index:20}
   #sidebar.open{transform:none}
@@ -278,6 +311,7 @@ input,select{font:inherit;color:var(--text)}
         <button class="vt sel" data-view="notes" title="Notes">📝<span class="vt-l"> Notes</span></button>
         <button class="vt" data-view="chat" title="Chat">💬<span class="vt-l"> Chat</span><span id="chat-badge" hidden></span></button>
         <button class="vt" data-view="calendar" title="Calendar">📅<span class="vt-l"> Calendar</span></button>
+        <button class="vt" data-view="photos" title="Photos">🖼<span class="vt-l"> Photos</span></button>
       </nav>
       <input id="note-title" placeholder="Note title" autocomplete="off">
       <b id="view-label" hidden></b>
@@ -346,6 +380,19 @@ input,select{font:inherit;color:var(--text)}
           <textarea id="ev-notes" rows="2" placeholder="Notes (optional)"></textarea>
         </div>
       </div>
+    </div>
+    <div id="photo-view" hidden>
+      <div class="view-head">
+        <button class="btn ghost small" id="ph-back" hidden>‹ Albums</button>
+        <b id="ph-title">Albums</b>
+        <span class="spacer"></span>
+        <button class="btn ghost small" id="ph-rename" hidden>Rename</button>
+        <button class="btn danger small" id="ph-del-album" hidden>Delete album</button>
+        <button class="btn ghost small" id="ph-new-album">+ Album</button>
+        <button class="btn small" id="ph-add">+ Add photos</button>
+        <input type="file" id="ph-picker" accept="image/*" multiple hidden>
+      </div>
+      <div id="ph-body"></div>
     </div>
     <footer id="statusbar">
       <span id="wordcount"></span>
@@ -512,6 +559,25 @@ input,select{font:inherit;color:var(--text)}
   </div>
 </div>
 
+<div id="ph-viewer" hidden>
+  <div class="pv-top">
+    <span id="pv-count"></span><span class="spacer"></span>
+    <button class="btn ghost small" id="pv-download">⬇ Download</button>
+    <button class="btn danger small" id="pv-delete">Delete</button>
+    <button class="icon-btn" id="pv-close" title="Close">✕</button>
+  </div>
+  <div class="pv-stage">
+    <button class="pv-nav" id="pv-prev" title="Previous">‹</button>
+    <img id="pv-img" alt="">
+    <button class="pv-nav" id="pv-next" title="Next">›</button>
+  </div>
+  <div class="pv-foot">
+    <input id="pv-caption" class="txt" placeholder="Add a caption" maxlength="500" autocomplete="off">
+    <div class="row"><label for="pv-album">Album</label><select id="pv-album" class="txt"></select></div>
+    <span id="pv-meta"></span><span id="pv-status"></span>
+  </div>
+</div>
+
 <div id="ctx"></div>
 <div id="toast"><span id="toast-msg"></span><button id="toast-act" hidden></button></div>
 
@@ -542,8 +608,8 @@ document.getElementById('install-btn').onclick=async()=>{
 /*__APP_START__*/
 const APP = {
   name: 'MavPad',
-  version: 'beta 0.4.0',
-  code: 4,                       // versionCode — matches GitHub release tag vN
+  version: 'beta 0.5.0',
+  code: 5,                       // versionCode — matches GitHub release tag vN
   repo: 'wilsonsamiano/secure-notepad',
   bmc: 'https://buymeacoffee.com/wilsonsamiano'
 };
@@ -625,17 +691,34 @@ function mergeRecords(local, incoming){
 const DBN='mavpad';
 function idbOpen(){
   return new Promise((res,rej)=>{
-    const r=indexedDB.open(DBN,3);
+    const r=indexedDB.open(DBN,4);
     r.onupgradeneeded=e=>{
       const db=e.target.result;
       if(!db.objectStoreNames.contains('notes')) db.createObjectStore('notes',{keyPath:'id'});
       if(!db.objectStoreNames.contains('topics')) db.createObjectStore('topics',{keyPath:'id'});
       if(!db.objectStoreNames.contains('meta')) db.createObjectStore('meta',{keyPath:'k'});
       if(!db.objectStoreNames.contains('passwords')) db.createObjectStore('passwords',{keyPath:'id'});
-      for(const s of ['chat','events','exports','config']) if(!db.objectStoreNames.contains(s)) db.createObjectStore(s,{keyPath:'id'});
+      for(const s of ['chat','events','exports','config','albums']) if(!db.objectStoreNames.contains(s)) db.createObjectStore(s,{keyPath:'id'});
+      for(const s of ['photos','pixels']) if(!db.objectStoreNames.contains(s)) db.createObjectStore(s,{keyPath:'id'}).createIndex('meta',['updatedAt','del']);
     };
     r.onsuccess=e=>res(e.target.result);
     r.onerror=()=>rej(r.error);
+  });
+}
+function idbGet(db,s,k){ return new Promise((res,rej)=>{ const q=db.transaction(s).objectStore(s).get(k); q.onsuccess=()=>res(q.result); q.onerror=()=>rej(q.error); }); }
+/* [{id, updatedAt, deleted}] — from the 'meta' index when the store has one (no values loaded). */
+function idbMeta(db,s){
+  return new Promise((res,rej)=>{
+    const os=db.transaction(s).objectStore(s), out=[];
+    if(os.indexNames.contains('meta')){
+      const c=os.index('meta').openKeyCursor();
+      c.onsuccess=()=>{ const cur=c.result; if(!cur) return res(out); out.push({id:cur.primaryKey,updatedAt:cur.key[0],deleted:!!cur.key[1]}); cur.continue(); };
+      c.onerror=()=>rej(c.error);
+    }else{
+      const q=os.getAll();
+      q.onsuccess=()=>res((q.result||[]).map(r=>({id:r.id,updatedAt:r.updatedAt,deleted:!!r.deleted})));
+      q.onerror=()=>rej(q.error);
+    }
   });
 }
 function idbAll(db,s){ return new Promise((res,rej)=>{ const q=db.transaction(s).objectStore(s).getAll(); q.onsuccess=()=>res(q.result||[]); q.onerror=()=>rej(q.error); }); }
@@ -746,7 +829,7 @@ async function unlock(code, remember){
     // sanity: try decrypting one record if any exist (detects wrong code fast-ish)
     DB=DB||await idbOpen();
     KEY=key; CODE=code;
-    await loadAll(); await loadNet(); await loadChat(); await loadEvents(); await loadExports();
+    await loadAll(); await loadNet(); await loadChat(); await loadEvents(); await loadExports(); await loadPhotos();
     if(remember) localStorage.setItem('mavpad.code',code);
     $('#lock').hidden=true; $('#app').hidden=false;
     setView('notes'); renderSidebar(); openFirstNote(); applyTheme(theme,false);
@@ -763,6 +846,7 @@ function lock(){
   stopSync();
   KEY=null; CODE=null; topics.clear(); notes.clear(); passwords.clear(); curNoteId=null;
   chatMsgs=[]; events=[]; exportLog=[]; NET={relays:[],roles:{},names:{},updatedAt:0};
+  albums.clear(); photos.clear(); photoCache.clear(); phAlbum=null; closeViewer();
   setView('notes');
   shareKeyCache.clear();
   $('#app').hidden=true; $('#lock').hidden=false;
@@ -1187,7 +1271,7 @@ async function importPasswordCSV(file){
    Any record newly applied here is forwarded to the other links (store and
    forward); a record already known is ignored, so forwarding stops by itself.
    Conflict rule: newest write wins (updatedAt); on a tie a delete wins. */
-const KIND_STORE={note:'notes',topic:'topics',password:'passwords',chat:'chat',event:'events',export:'exports',config:'config'};
+const KIND_STORE={note:'notes',topic:'topics',password:'passwords',chat:'chat',event:'events',export:'exports',config:'config',album:'albums',photo:'photos',pixel:'pixels'};
 const STORE_KIND=Object.fromEntries(Object.entries(KIND_STORE).map(([k,s])=>[s,k]));
 const links=new Set();            // open links: {type:'relay'|'device', label, send(m), close(), q, last}
 let peerLoading=null, linkSeq=0;
@@ -1204,15 +1288,30 @@ function isNewer(a,b){            // newest write wins; a delete wins a tie
   return !!a.deleted&&!b.deleted;
 }
 function withKind(kind,rec){ return rec?Object.assign({},rec,{kind}):rec; }
-async function allRecs(){
+/* Metadata only (id, updatedAt, deleted). Photo stores read it from an index
+   key cursor, so comparing devices never loads the pictures themselves. */
+async function allMeta(){
   const out=[];
-  for(const [kind,store] of Object.entries(KIND_STORE)) for(const r of await idbAll(DB,store)) out.push(withKind(kind,r));
+  for(const [kind,store] of Object.entries(KIND_STORE)) for(const m of await idbMeta(DB,store)) out.push(Object.assign({kind},m));
   return out;
 }
 async function localDigest(){
   const d={};
-  for(const r of await allRecs()) d[r.kind+':'+r.id]=[r.updatedAt,r.deleted?1:0];
+  for(const r of await allMeta()) d[r.kind+':'+r.id]=[r.updatedAt,r.deleted?1:0];
   return d;
+}
+/* Full records for 'kind:id' keys, sent a few at a time so big photos are not all held in memory. */
+async function sendKeys(link,keys){
+  for(let i=0;i<keys.length;i+=16){
+    const recs=[];
+    for(const k of keys.slice(i,i+16)){
+      const j=k.indexOf(':'), kind=k.slice(0,j), store=KIND_STORE[kind];
+      if(!store) continue;
+      const r=await idbGet(DB,store,k.slice(j+1));
+      if(r) recs.push(withKind(kind,r));
+    }
+    if(recs.length) sendRecs(link,recs);
+  }
 }
 function recBatches(recs){
   const out=[]; let cur=[], sz=0;
@@ -1234,11 +1333,10 @@ async function ingestNow(recs,from){
   for(const r of recs){ if(!r||!r.id||!KIND_STORE[r.kind]) continue; (byStore[KIND_STORE[r.kind]]=byStore[KIND_STORE[r.kind]]||[]).push(r); }
   const applied=[];
   for(const [store,list] of Object.entries(byStore)){
-    const local=new Map((await idbAll(DB,store)).map(r=>[r.id,r]));
     for(const rec of list){
-      if(!isNewer(rec,local.get(rec.id))) continue;
-      const clean=Object.assign({},rec); delete clean.kind;
-      local.set(rec.id,clean); await idbPut(DB,store,clean); applied.push(rec);
+      if(!isNewer(rec,await idbGet(DB,store,rec.id))) continue;
+      const clean=Object.assign({},rec,{del:rec.deleted?1:0}); delete clean.kind;
+      await idbPut(DB,store,clean); applied.push(rec);
     }
   }
   if(!applied.length) return;
@@ -1261,6 +1359,11 @@ async function afterIngest(applied){
   }
   if(kinds.has('event')){ await loadEvents(); renderCalendar(); }
   if(kinds.has('export')){ await loadExports(); renderExportHistory(); }
+  if(kinds.has('album')||kinds.has('photo')||kinds.has('pixel')){
+    await loadPhotos(); renderPhotos();
+    const cur=viewerList[viewerIdx];
+    if(cur&&!$('#ph-viewer').hidden&&applied.some(r=>r.id===cur.id)) showViewer();
+  }
 }
 
 /* --- link protocol (same messages for relays and devices) --- */
@@ -1297,21 +1400,20 @@ async function handleLinkMsg(link,msg){
   if(!msg||!KEY) return;
   if(msg.t==='recs') return ingest(msg.recs,link);
   if(msg.t==='have'){
-    const have=msg.have||{}, mine=[], want=[], local=await allRecs(), seen=new Set();
-    for(const r of local){
+    const have=msg.have||{}, mine=[], want=[], seen=new Set();
+    for(const r of await allMeta()){
       const k=r.kind+':'+r.id; seen.add(k); const h=have[k];
-      if(!h||isNewer(r,{updatedAt:h[0],deleted:!!h[1]})) mine.push(r);
+      if(!h||isNewer(r,{updatedAt:h[0],deleted:!!h[1]})) mine.push(k);
       else if(isNewer({updatedAt:h[0],deleted:!!h[1]},r)) want.push(k);
     }
     for(const k of Object.keys(have)) if(!seen.has(k)) want.push(k);
-    sendRecs(link,mine);
+    await sendKeys(link,mine);
     if(want.length) link.send({t:'want',keys:want});
     link.send({t:'synced',req:msg.req});
     return;
   }
   if(msg.t==='want'){
-    const keys=new Set(msg.keys||[]);
-    sendRecs(link,(await allRecs()).filter(r=>keys.has(r.kind+':'+r.id)));
+    await sendKeys(link,(msg.keys||[]).map(String));
     return;
   }
   if(msg.t==='synced'){ await ingestChain; const fn=link.pending.get(msg.req); if(fn){ link.pending.delete(msg.req); fn(true); } return; }
@@ -1806,10 +1908,12 @@ function setView(v){
   $('#pass-view').hidden=v!=='passwords';
   $('#chat-view').hidden=v!=='chat';
   $('#cal-view').hidden=v!=='calendar';
+  $('#photo-view').hidden=v!=='photos';
   $('#view-label').hidden=v==='notes';
-  $('#view-label').textContent=v==='chat'?'💬 Team chat':v==='calendar'?'📅 Calendar':v==='passwords'?'🔑 Passwords':'';
+  $('#view-label').textContent=v==='chat'?'💬 Team chat':v==='calendar'?'📅 Calendar':v==='photos'?'🖼 Photos':v==='passwords'?'🔑 Passwords':'';
   if(v==='chat'){ unreadChat=0; renderChat(); setTimeout(()=>{ const l=$('#chat-list'); l.scrollTop=l.scrollHeight; },0); }
   if(v==='calendar') renderCalendar();
+  if(v==='photos') renderPhotos();
   if(v==='passwords') renderPasswords();
   if(v!=='notes'){ $('#wordcount').textContent=''; $('#note-time').textContent=''; } else updateStatusbar();
   renderViewTabs();
@@ -1957,7 +2061,7 @@ function renderExportHistory(){
   const box=$('#export-history'); if(!box) return;
   box.innerHTML='';
   if(!exportLog.length){ box.textContent='No exports yet.'; return; }
-  const icon={notes:'📝',chat:'💬',calendar:'📅'};
+  const icon={notes:'📝',chat:'💬',calendar:'📅',photo:'🖼'};
   for(const x of exportLog.slice(0,100)){
     const d=document.createElement('div'); d.className='hist-row';
     d.textContent=(icon[x.what]||'⬇')+' '+(x.what||'?')+' · '+fmtTime(x.at)+' · by '+(x.by||'Unnamed')+(x.count!=null?' · '+x.count+' item'+(x.count===1?'':'s'):'');
@@ -2094,6 +2198,212 @@ async function addRelay(){
   toast('Relay added — every device on this code gets it');
 }
 
+/* ---------- photos + albums ----------
+   album: {name, by, createdAt}
+   photo: {albumId, caption, by, addedAt, takenAt, w, h, thumb}  — small, loaded for the grid
+   pixel: {img}  — the full picture, same id as its photo, read from IndexedDB only when opened
+   All three are AES-256-GCM with the sync code and ride the same relays/mesh.
+   albumId '' means "Unsorted". */
+const albums=new Map(), photos=new Map();
+const photoCache=new Map();        // id -> {updatedAt, obj}: skip re-decrypting unchanged records
+let phAlbum=null;                  // null = album list, '*' = all photos, '' = unsorted, else album id
+let viewerList=[], viewerIdx=-1;
+async function putPhotoKind(kind,id,obj,updatedAt){
+  const pack=await encJSON(KEY,obj);
+  const rec={id,iv:pack.iv,data:pack.data,updatedAt,deleted:false,del:0};
+  await idbPut(DB,KIND_STORE[kind],rec);
+  publish([withKind(kind,rec)]);
+}
+async function tombstone(kind,id){
+  const rec={id,iv:'',data:'',updatedAt:Date.now(),deleted:true,del:1};
+  await idbPut(DB,KIND_STORE[kind],rec);
+  publish([withKind(kind,rec)]);
+}
+async function loadPhotos(){
+  albums.clear();
+  for(const a of await decryptStore('albums')) albums.set(a.id,a);
+  const seen=new Set();
+  for(const m of await idbMeta(DB,'photos')){
+    if(m.deleted) continue;
+    seen.add(m.id);
+    const c=photoCache.get(m.id);
+    if(c&&c.updatedAt===m.updatedAt){ photos.set(m.id,c.obj); continue; }
+    try{
+      const r=await idbGet(DB,'photos',m.id);
+      const obj=Object.assign({id:m.id,updatedAt:r.updatedAt},await decJSON(KEY,r));
+      photoCache.set(m.id,{updatedAt:r.updatedAt,obj}); photos.set(m.id,obj);
+    }catch(e){}
+  }
+  for(const id of [...photos.keys()]) if(!seen.has(id)){ photos.delete(id); photoCache.delete(id); }
+  if(phAlbum&&phAlbum!=='*'&&phAlbum!==''&&!albums.has(phAlbum)) phAlbum=null;
+}
+function albumPhotos(aid){
+  const list=[...photos.values()].filter(p=>aid==='*'||(p.albumId||'')===aid||(aid===''&&p.albumId&&!albums.has(p.albumId)));
+  return list.sort((a,b)=>(b.takenAt||b.addedAt)-(a.takenAt||a.addedAt));
+}
+function albumName(aid){ return aid==='*'?'All photos':aid===''?'Unsorted':(albums.get(aid)||{}).name||'Album'; }
+function liveAlbums(){ return [...albums.values()].sort((a,b)=>(a.name||'').localeCompare(b.name||'')); }
+function renderPhotos(){
+  if(curView!=='photos') return;
+  const body=$('#ph-body'); body.innerHTML='';
+  const inAlbum=phAlbum!==null, real=inAlbum&&phAlbum!=='*'&&phAlbum!=='';
+  $('#ph-back').hidden=!inAlbum;
+  $('#ph-title').textContent=inAlbum?albumName(phAlbum):'Albums';
+  $('#ph-new-album').hidden=inAlbum;
+  $('#ph-rename').hidden=!real; $('#ph-del-album').hidden=!real;
+  if(!inAlbum){
+    const cards=[['*','All photos'],...liveAlbums().map(a=>[a.id,a.name]),['','Unsorted']];
+    const grid=document.createElement('div'); grid.className='album-grid';
+    for(const [aid,name] of cards){
+      const list=albumPhotos(aid);
+      if(aid===''&&!list.length) continue;
+      const b=document.createElement('button'); b.type='button'; b.className='album-card'; b.dataset.album=aid;
+      const cover=document.createElement('div'); cover.className='album-cover';
+      if(list[0]){ const img=document.createElement('img'); img.src=list[0].thumb; img.alt=''; cover.appendChild(img); } else cover.textContent='🖼';
+      const nm=document.createElement('b'); nm.textContent=name;
+      const ct=document.createElement('span'); ct.textContent=list.length+' photo'+(list.length===1?'':'s');
+      b.append(cover,nm,ct);
+      b.onclick=()=>{ phAlbum=aid; renderPhotos(); };
+      grid.appendChild(b);
+    }
+    body.appendChild(grid);
+    if(!photos.size){ const p=document.createElement('p'); p.className='pass-help'; p.textContent='No photos yet. Make an album, then add photos to it. Photos are encrypted with your sync code and shared with everyone on it.'; body.appendChild(p); }
+    return;
+  }
+  const list=albumPhotos(phAlbum);
+  if(!list.length){ const p=document.createElement('p'); p.className='pass-help'; p.textContent=phAlbum==='*'?'No photos yet.':'This album is empty. Tap “+ Add photos” or drop pictures here.'; body.appendChild(p); return; }
+  const grid=document.createElement('div'); grid.className='photo-grid';
+  list.forEach((p,i)=>{
+    const b=document.createElement('button'); b.type='button'; b.className='photo-tile'; b.title=p.caption||'';
+    const img=document.createElement('img'); img.src=p.thumb; img.alt=p.caption||''; img.loading='lazy';
+    b.appendChild(img);
+    b.onclick=()=>openViewer(list,i);
+    grid.appendChild(b);
+  });
+  body.appendChild(grid);
+}
+function scaleImage(file,max,q){
+  return new Promise((res,rej)=>{
+    const url=URL.createObjectURL(file), img=new Image();
+    img.onload=()=>{
+      URL.revokeObjectURL(url);
+      const sc=Math.min(1,max/Math.max(img.width,img.height));
+      const w=Math.max(1,Math.round(img.width*sc)), h=Math.max(1,Math.round(img.height*sc));
+      const c=document.createElement('canvas'); c.width=w; c.height=h;
+      const ctx=c.getContext('2d'); ctx.fillStyle='#fff'; ctx.fillRect(0,0,w,h); ctx.drawImage(img,0,0,w,h);
+      res({url:c.toDataURL('image/jpeg',q),w,h});
+    };
+    img.onerror=()=>{ URL.revokeObjectURL(url); rej(new Error('bad image')); };
+    img.src=url;
+  });
+}
+async function addPhotos(files){
+  files=[...files].filter(f=>f&&f.type&&f.type.startsWith('image/'));
+  if(!files.length||!KEY) return;
+  if(!needName()) return;
+  try{ if(navigator.storage&&navigator.storage.persist) navigator.storage.persist(); }catch(e){}
+  const aid=(phAlbum&&phAlbum!=='*')?phAlbum:'';
+  let done=0, bad=0;
+  for(const f of files){
+    toast('Adding photo '+(done+bad+1)+' of '+files.length+'…');
+    try{
+      const full=await scaleImage(f,2560,0.86), th=await scaleImage(f,400,0.72);
+      const now=Date.now(), id='ph'+now.toString(36)+rid();
+      await putPhotoKind('pixel',id,{img:full.url},now);
+      await putPhotoKind('photo',id,{albumId:aid,caption:'',by:myName(),addedAt:now,takenAt:f.lastModified||now,w:full.w,h:full.h,thumb:th.url},now);
+      done++;
+    }catch(e){ bad++; }
+  }
+  await loadPhotos(); renderPhotos();
+  toast('Added '+done+' photo'+(done===1?'':'s')+' to '+albumName(aid)+(bad?' · '+bad+' could not be read':'')+(links.size?'':' — they sync when a relay or device is reachable'));
+}
+async function newAlbum(){
+  const name=prompt('Album name:','');
+  if(!name||!name.trim()) return;
+  if(!needName()) return;
+  const now=Date.now(), id='al'+now.toString(36)+rid();
+  await putPhotoKind('album',id,{name:name.trim().slice(0,80),by:myName(),createdAt:now},now);
+  await loadPhotos(); phAlbum=id; renderPhotos();
+}
+async function renameAlbum(){
+  const a=albums.get(phAlbum); if(!a) return;
+  const name=prompt('Rename album:',a.name);
+  if(!name||!name.trim()||name.trim()===a.name) return;
+  await putPhotoKind('album',a.id,{name:name.trim().slice(0,80),by:a.by,createdAt:a.createdAt},Date.now());
+  await loadPhotos(); renderPhotos();
+}
+async function deleteAlbum(){
+  const a=albums.get(phAlbum); if(!a) return;
+  const list=albumPhotos(a.id);
+  if(!confirm('Delete album "'+a.name+'" for everyone? Its '+list.length+' photo'+(list.length===1?'':'s')+' move to Unsorted.')) return;
+  for(const p of list) await savePhotoMeta(p,{albumId:''});
+  await tombstone('album',a.id);
+  phAlbum=null; await loadPhotos(); renderPhotos();
+}
+async function savePhotoMeta(p,changes){
+  const obj={albumId:p.albumId||'',caption:p.caption||'',by:p.by,addedAt:p.addedAt,takenAt:p.takenAt,w:p.w,h:p.h,thumb:p.thumb};
+  Object.assign(obj,changes);
+  await putPhotoKind('photo',p.id,obj,Math.max(Date.now(),(p.updatedAt||0)+1));
+}
+/* --- viewer --- */
+async function openViewer(list,i){
+  viewerList=list; viewerIdx=i;
+  $('#ph-viewer').hidden=false;
+  await showViewer();
+}
+async function showViewer(){
+  const p=viewerList[viewerIdx]; if(!p){ closeViewer(); return; }
+  const cur=photos.get(p.id)||p;
+  const img=$('#pv-img'); img.src=cur.thumb; img.alt=cur.caption||'';
+  $('#pv-caption').value=cur.caption||'';
+  $('#pv-meta').textContent='Added by '+(cur.by||'Unnamed')+' · '+fmtTime(cur.addedAt||cur.updatedAt)+(cur.w?' · '+cur.w+'×'+cur.h:'');
+  const sel=$('#pv-album'); sel.innerHTML='';
+  for(const [v,t] of [['','Unsorted'],...liveAlbums().map(a=>[a.id,a.name])]){ const o=document.createElement('option'); o.value=v; o.textContent=t; sel.appendChild(o); }
+  sel.value=albums.has(cur.albumId)?cur.albumId:'';
+  $('#pv-count').textContent=(viewerIdx+1)+' / '+viewerList.length;
+  $('#pv-prev').disabled=viewerIdx<=0; $('#pv-next').disabled=viewerIdx>=viewerList.length-1;
+  $('#pv-status').textContent='';
+  const full=await fullImage(cur.id);
+  if(viewerList[viewerIdx]&&viewerList[viewerIdx].id===cur.id){
+    if(full) img.src=full; else $('#pv-status').textContent='Full size is still syncing — showing the preview.';
+  }
+}
+async function fullImage(id){
+  try{ const r=await idbGet(DB,'pixels',id); if(!r||r.deleted) return null; return (await decJSON(KEY,r)).img||null; }catch(e){ return null; }
+}
+function closeViewer(){ $('#ph-viewer').hidden=true; $('#pv-img').src=''; viewerList=[]; viewerIdx=-1; }
+function stepViewer(d){ const n=viewerIdx+d; if(n<0||n>=viewerList.length) return; viewerIdx=n; showViewer(); }
+async function viewerCaption(){
+  const p=photos.get((viewerList[viewerIdx]||{}).id); if(!p) return;
+  const c=$('#pv-caption').value.slice(0,500);
+  if(c===(p.caption||'')) return;
+  await savePhotoMeta(p,{caption:c}); await loadPhotos(); renderPhotos();
+}
+async function viewerMove(){
+  const p=photos.get((viewerList[viewerIdx]||{}).id); if(!p) return;
+  const aid=$('#pv-album').value;
+  await savePhotoMeta(p,{albumId:aid}); await loadPhotos(); renderPhotos();
+  toast('Moved to '+albumName(aid));
+  if(phAlbum!=='*'&&phAlbum!==aid){ viewerList.splice(viewerIdx,1); if(viewerIdx>=viewerList.length) viewerIdx=viewerList.length-1; showViewer(); }
+}
+async function viewerDelete(){
+  const p=viewerList[viewerIdx]; if(!p) return;
+  if(!confirm('Delete this photo for everyone on this sync code?')) return;
+  await tombstone('photo',p.id); await tombstone('pixel',p.id);
+  photoCache.delete(p.id);
+  viewerList.splice(viewerIdx,1); if(viewerIdx>=viewerList.length) viewerIdx=viewerList.length-1;
+  await loadPhotos(); renderPhotos();
+  if(viewerIdx<0) closeViewer(); else showViewer();
+  toast('Photo deleted');
+}
+async function viewerDownload(){
+  const p=viewerList[viewerIdx]; if(!p) return;
+  const src=await fullImage(p.id)||p.thumb;
+  const name='mavpad-photo-'+new Date(p.takenAt||p.addedAt).toISOString().slice(0,10)+'-'+p.id.slice(-6)+'.jpg';
+  const a=document.createElement('a'); a.href=src; a.download=name; document.body.appendChild(a); a.click(); a.remove();
+  await logExport('photo',1);
+}
+
 /* ---------- backup ---------- */
 async function exportBackup(){
   const all={}; for(const s of Object.values(KIND_STORE)) all[s]=await idbAll(DB,s);
@@ -2123,7 +2433,7 @@ async function importBackup(file){
     await applyIncoming('topics',d.topics||[]);
     await applyIncoming('notes',d.notes||[]);
     await applyIncoming('passwords',d.passwords||[]);
-    for(const s of ['chat','events','exports','config']) await applyIncoming(s,d[s]||[]);
+    for(const s of ['chat','events','exports','config','albums','photos','pixels']) await applyIncoming(s,d[s]||[]);
     toast('⬆ Backup imported & merged');
   }catch(e){ toast('Import failed — wrong code or bad file'); }
 }
@@ -2206,6 +2516,28 @@ function wireEvents(){
   $('#role-backup').onclick=()=>setThisDeviceRole('backup');
   $('#role-member').onclick=()=>setThisDeviceRole('member');
   $('#exp-notes').onclick=exportNotes;
+  $('#ph-back').onclick=()=>{ phAlbum=null; renderPhotos(); };
+  $('#ph-new-album').onclick=newAlbum;
+  $('#ph-rename').onclick=renameAlbum;
+  $('#ph-del-album').onclick=deleteAlbum;
+  $('#ph-add').onclick=()=>$('#ph-picker').click();
+  $('#ph-picker').addEventListener('change',e=>{ addPhotos(e.target.files); e.target.value=''; });
+  const phb=$('#ph-body');
+  phb.addEventListener('dragover',e=>{ e.preventDefault(); phb.classList.add('drop'); });
+  phb.addEventListener('dragleave',()=>phb.classList.remove('drop'));
+  phb.addEventListener('drop',e=>{ e.preventDefault(); phb.classList.remove('drop'); if(e.dataTransfer.files&&e.dataTransfer.files.length) addPhotos(e.dataTransfer.files); });
+  $('#pv-close').onclick=closeViewer;
+  $('#pv-prev').onclick=()=>stepViewer(-1);
+  $('#pv-next').onclick=()=>stepViewer(1);
+  $('#pv-delete').onclick=viewerDelete;
+  $('#pv-download').onclick=viewerDownload;
+  $('#pv-caption').addEventListener('change',viewerCaption);
+  $('#pv-caption').addEventListener('keydown',e=>{ if(e.key==='Enter') e.target.blur(); });
+  $('#pv-album').addEventListener('change',viewerMove);
+  document.addEventListener('keydown',e=>{
+    if($('#ph-viewer').hidden||e.target===$('#pv-caption')) return;
+    if(e.key==='ArrowLeft') stepViewer(-1); else if(e.key==='ArrowRight') stepViewer(1); else if(e.key==='Escape') closeViewer();
+  });
   $('#exp-chat').onclick=exportChat;
   $('#exp-cal').onclick=exportCalendar;
   $('#pass-search').addEventListener('input',e=>{ passFilter=e.target.value; renderPasswords(); });
@@ -2311,7 +2643,8 @@ async function regenCode(){
   }
   KEY=newKey; CODE=newCode;
   if(localStorage.getItem('mavpad.code')) localStorage.setItem('mavpad.code',newCode);
-  await loadAll(); await loadNet(); await loadChat(); await loadEvents(); await loadExports();
+  photoCache.clear();
+  await loadAll(); await loadNet(); await loadChat(); await loadEvents(); await loadExports(); await loadPhotos();
   renderSidebar(); refreshCodeBox(true); openFirstNote(); renderNet(); renderExportHistory();
   if(localStorage.getItem('mavpad.sync')!=='off') startSync();
   toast('🎲 New code generated — update your other devices');
