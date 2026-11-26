@@ -51,9 +51,11 @@ app.whenReady().then(() => {
   ipcMain.handle('save-text-file', async (e, name, text) => {
     const win = BrowserWindow.fromWebContents(e.sender);
     const safe = String(name || 'mavpad-backup.json').replace(/[^A-Za-z0-9._-]/g, '_');
+    const ext = (safe.split('.').pop() || 'json').toLowerCase();
+    const kinds = { json: 'JSON', txt: 'Text', ics: 'iCalendar' };
     const result = await dialog.showSaveDialog(win, {
       defaultPath: safe,
-      filters: [{ name: 'JSON', extensions: ['json'] }]
+      filters: [{ name: kinds[ext] || 'File', extensions: [ext] }]
     });
     if (result.canceled || !result.filePath) return false;
     fs.writeFileSync(result.filePath, String(text), 'utf8');

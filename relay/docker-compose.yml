@@ -1,0 +1,15 @@
+# MavPad relay — run one copy on each Umbrel.
+# Set RELAY_NAME and PEERS per machine (PEERS = the OTHER Umbrel's relay URL).
+services:
+  mavpad-relay:
+    build: .
+    container_name: mavpad-relay
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8787:8787"   # only local; Tailscale Serve publishes it on the tailnet with HTTPS
+    environment:
+      RELAY_NAME: "umbrel-1"
+      PEERS: "wss://umbrel-2.YOUR-TAILNET.ts.net"
+      # PEER_SECRET: "same-random-string-on-both-umbrels"   # optional
+    volumes:
+      - ./data:/data

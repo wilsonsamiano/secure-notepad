@@ -165,7 +165,96 @@ input,select{font:inherit;color:var(--text)}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:auto}
 #toast button{color:var(--accent);font-weight:700}
 
+/* views: chat / calendar */
+#toolbar[hidden],#editor-wrap[hidden],#note-title[hidden]{display:none}
+#view-tabs{display:flex;gap:2px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:2px}
+.vt{padding:5px 9px;border-radius:8px;font-size:13px;font-weight:600;color:var(--muted);white-space:nowrap;position:relative}
+.vt.sel{background:var(--panel);color:var(--accent)}
+#chat-badge{position:absolute;top:-4px;right:-4px;background:var(--danger);color:#fff;border-radius:10px;font-size:10px;padding:0 5px;line-height:16px}
+#chat-badge[hidden]{display:none}
+#view-label{flex:1;font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#view-label[hidden]{display:none}
+#chat-view,#cal-view{flex:1;display:flex;flex-direction:column;min-height:0}
+#chat-view[hidden],#cal-view[hidden]{display:none}
+.view-head{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--border);flex-wrap:wrap}
+.view-head .spacer{flex:1}
+.muted-note{font-size:12px;color:var(--muted)}
+.muted-note[hidden]{display:none}
+#chat-list{flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:8px}
+.chat-day{align-self:center;font-size:11px;color:var(--muted);border:1px solid var(--border);border-radius:12px;padding:2px 10px;margin:6px 0}
+.msg{max-width:78%;background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:8px 12px;align-self:flex-start}
+.msg.mine{align-self:flex-end;border-color:var(--accent)}
+.msg-head{display:flex;gap:8px;align-items:baseline;font-size:12px;color:var(--muted);margin-bottom:2px}
+.msg-head b{color:var(--accent)}
+.msg-body{white-space:pre-wrap;word-break:break-word;line-height:1.45}
+#chat-form{display:flex;gap:8px;padding:10px 14px;border-top:1px solid var(--border)}
+#chat-input,.txt,#ev-title,#ev-time,#ev-notes{flex:1;min-width:0;background:var(--editor);border:1px solid var(--border);border-radius:9px;padding:9px 10px;font:inherit;color:var(--text)}
+.txt.short{flex:0 1 110px}
+#cal-view{overflow-y:auto}
+#cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;padding:10px 14px}
+.cal-wd{font-size:11px;color:var(--muted);text-align:center;padding:2px 0}
+.cal-cell{min-height:64px;border:1px solid var(--border);border-radius:8px;padding:4px;text-align:left;display:flex;flex-direction:column;gap:2px;overflow:hidden;background:var(--editor)}
+.cal-cell.other{opacity:.45}
+.cal-cell.today .cal-num{background:var(--accent);color:var(--accent-ink);border-radius:10px;padding:0 6px}
+.cal-cell.sel{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.cal-num{font-size:12px;font-weight:700;align-self:flex-start}
+.cal-ev{font-size:10px;background:var(--panel);border-left:2px solid var(--accent);padding:0 3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cal-more{font-size:10px;color:var(--muted)}
+#cal-day{padding:4px 14px 24px}
+#cal-day h3{font-size:15px;margin:6px 0 10px}
+.ev-row{border:1px solid var(--border);border-radius:10px;padding:9px 12px;margin-bottom:8px;background:var(--panel);display:flex;flex-direction:column;gap:4px;align-items:flex-start}
+.ev-meta{font-size:11px;color:var(--muted)}
+.ev-notes{font-size:13px;white-space:pre-wrap}
+#ev-form{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+#ev-form .row{margin:0}
+#ev-time{flex:0 0 130px}
+/* photos */
+#photo-view{flex:1;display:flex;flex-direction:column;min-height:0}
+#photo-view[hidden]{display:none}
+#ph-body{flex:1;overflow-y:auto;padding:14px}
+#ph-body.drop{outline:2px dashed var(--accent);outline-offset:-8px}
+.album-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.album-card{display:flex;flex-direction:column;gap:3px;text-align:left;padding:0 0 8px;border:1px solid var(--border);border-radius:12px;background:var(--panel);overflow:hidden}
+.album-card:hover{border-color:var(--accent)}
+.album-card b,.album-card span{padding:0 10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.album-card span{font-size:12px;color:var(--muted)}
+.album-cover{aspect-ratio:1;background:var(--editor);display:flex;align-items:center;justify-content:center;font-size:34px;margin-bottom:5px}
+.album-cover img{width:100%;height:100%;object-fit:cover;display:block}
+.photo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:4px}
+.photo-tile{aspect-ratio:1;overflow:hidden;border-radius:6px;background:var(--editor);padding:0}
+.photo-tile img{width:100%;height:100%;object-fit:cover;display:block}
+.photo-tile:hover{outline:2px solid var(--accent)}
+#ph-viewer{position:fixed;inset:0;z-index:250;background:rgba(0,0,0,.92);display:flex;flex-direction:column;color:#eee}
+#ph-viewer[hidden]{display:none}
+.pv-top,.pv-foot{display:flex;align-items:center;gap:8px;padding:10px 14px;flex-wrap:wrap}
+.pv-top .spacer{flex:1}
+.pv-top .icon-btn{color:#eee}
+.pv-stage{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;gap:6px;padding:0 6px}
+#pv-img{max-width:calc(100% - 90px);max-height:100%;object-fit:contain;border-radius:6px}
+.pv-nav{font-size:34px;width:40px;height:70px;border-radius:10px;color:#eee}
+.pv-nav:hover:not(:disabled){background:rgba(255,255,255,.12)}
+.pv-nav:disabled{opacity:.2}
+.pv-foot{flex-direction:column;align-items:stretch}
+.pv-foot .row{margin:0;align-items:center}
+.pv-foot label{font-size:13px;color:#bbb}
+#pv-meta,#pv-status{font-size:12px;color:#aaa}
+/* relays */
+#role-line{font-size:11px;color:var(--muted);padding:6px 14px;border-top:1px solid var(--border);line-height:1.4}
+.relay-row{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--border);border-radius:10px;padding:9px 10px;margin-bottom:8px;flex-wrap:wrap}
+.relay-row .row{margin:0;flex-basis:100%}
+.relay-info{flex:1;min-width:0;display:flex;flex-direction:column}
+.relay-info span{font-size:12px;color:var(--muted);word-break:break-all}
+.dot{width:10px;height:10px;border-radius:50%;margin-top:5px;flex:none;background:#8a8a8a}
+.dot.up{background:#4caf50}.dot.wait{background:var(--accent)}.dot.down{background:var(--danger)}
+.hist-row{font-size:12px;color:var(--muted);padding:5px 0;border-bottom:1px solid var(--border)}
+#export-history,#device-list{font-size:12px;color:var(--muted);max-height:200px;overflow-y:auto;margin-top:6px}
+
 @media (max-width:1100px), (hover: none) and (pointer: coarse){
+  .vt-l{display:none}
+  #pv-img{max-width:100%}
+  .pv-nav{position:absolute;top:45%;background:rgba(0,0,0,.35)}
+  #pv-prev{left:4px} #pv-next{right:4px}
+  #view-label{visibility:hidden;min-width:0}
   #sidebar{position:fixed;left:0;top:0;bottom:0;transform:translateX(-105%);transition:transform .22s;box-shadow:var(--shadow);z-index:20}
   #sidebar.open{transform:none}
   #menu-btn{display:inline-flex}
@@ -194,7 +283,7 @@ input,select{font:inherit;color:var(--text)}
     <button id="unlock-btn">Unlock</button>
     <button id="install-btn" hidden>Install app</button>
     <p id="lock-error"></p>
-    <p class="lock-hint">Use the <b>same code on every device</b>. Sync starts on its own after you unlock. Notes stay encrypted — the relay only ever sees ciphertext.</p>
+    <p class="lock-hint">Use the <b>same code on every device</b>. Sync starts on its own after you unlock. Notes stay encrypted — relays only ever see ciphertext.</p>
   </div>
 </div>
 
@@ -207,6 +296,7 @@ input,select{font:inherit;color:var(--text)}
     </div>
     <input id="search" placeholder="🔍 Search notes…">
     <div id="topic-list"></div>
+    <div id="role-line"></div>
     <div class="side-foot">
       <button class="btn" id="new-topic-btn">+ Topic</button>
       <button class="btn ghost" id="new-note-btn">+ Note</button>
@@ -217,7 +307,14 @@ input,select{font:inherit;color:var(--text)}
   <main id="main">
     <header id="topbar">
       <button class="top-btn" id="menu-btn" title="Topics">☰</button>
+      <nav id="view-tabs">
+        <button class="vt sel" data-view="notes" title="Notes">📝<span class="vt-l"> Notes</span></button>
+        <button class="vt" data-view="chat" title="Chat">💬<span class="vt-l"> Chat</span><span id="chat-badge" hidden></span></button>
+        <button class="vt" data-view="calendar" title="Calendar">📅<span class="vt-l"> Calendar</span></button>
+        <button class="vt" data-view="photos" title="Photos">🖼<span class="vt-l"> Photos</span></button>
+      </nav>
       <input id="note-title" placeholder="Note title" autocomplete="off">
+      <b id="view-label" hidden></b>
       <span id="sync-pill"><span id="sync-dot"></span><span id="sync-text">Offline</span></span>
       <button class="top-btn" id="theme-btn" title="Theme: light / dark / brown">🌙</button>
       <button class="top-btn" id="lock-btn" title="Lock now">🔒</button>
@@ -258,6 +355,44 @@ input,select{font:inherit;color:var(--text)}
         <p><b>Brave.</b> Brave Sync cannot be read from another app. On a computer where Brave is signed in, open <code>brave://settings/passwords</code>, open the menu next to Saved passwords, and choose Export passwords. Import the CSV here, then delete it. Passwords you save in Brave later need another export.</p>
         <p>Logins stay in this notebook, encrypted with your sync code. A pad invite never includes them.</p>
       </div>
+    </div>
+    <div id="chat-view" hidden>
+      <div class="view-head"><span id="chat-offline" class="muted-note" hidden>Offline — new messages wait on this device and send when a relay or device is reachable.</span><span class="spacer"></span><button class="btn ghost small" id="chat-export">⬇ Export chat</button></div>
+      <div id="chat-list"></div>
+      <form id="chat-form" autocomplete="off"><input id="chat-input" placeholder="Message everyone on this sync code" maxlength="4000"><button class="btn small" id="chat-send" type="submit">Send</button></form>
+    </div>
+    <div id="cal-view" hidden>
+      <div class="view-head">
+        <button class="btn ghost small" id="cal-prev" title="Previous month">‹</button>
+        <b id="cal-title"></b>
+        <button class="btn ghost small" id="cal-next" title="Next month">›</button>
+        <button class="btn ghost small" id="cal-today">Today</button>
+        <span class="spacer"></span>
+        <button class="btn ghost small" id="cal-export">⬇ Export calendar</button>
+      </div>
+      <div id="cal-grid"></div>
+      <div id="cal-day">
+        <h3 id="cal-day-title"></h3>
+        <div id="cal-day-list"></div>
+        <div id="ev-form">
+          <input id="ev-title" placeholder="New event title" maxlength="200">
+          <div class="row"><input id="ev-time" type="time" title="Time (leave empty for all day)"><button class="btn small" id="ev-add">+ Add event</button></div>
+          <textarea id="ev-notes" rows="2" placeholder="Notes (optional)"></textarea>
+        </div>
+      </div>
+    </div>
+    <div id="photo-view" hidden>
+      <div class="view-head">
+        <button class="btn ghost small" id="ph-back" hidden>‹ Albums</button>
+        <b id="ph-title">Albums</b>
+        <span class="spacer"></span>
+        <button class="btn ghost small" id="ph-rename" hidden>Rename</button>
+        <button class="btn danger small" id="ph-del-album" hidden>Delete album</button>
+        <button class="btn ghost small" id="ph-new-album">+ Album</button>
+        <button class="btn small" id="ph-add">+ Add photos</button>
+        <input type="file" id="ph-picker" accept="image/*" multiple hidden>
+      </div>
+      <div id="ph-body"></div>
     </div>
     <footer id="statusbar">
       <span id="wordcount"></span>
@@ -333,6 +468,39 @@ input,select{font:inherit;color:var(--text)}
       </div>
 
       <div class="set-section">
+        <h3>👤 Your name</h3>
+        <p>Shown on your chat messages, calendar events and exports. You can change it anytime; messages and exports you already made keep the name they were made with.</p>
+        <div class="row"><input id="name-input" class="txt" placeholder="e.g. Wilson" maxlength="40" autocomplete="off"><button class="btn small" id="name-save">Save</button></div>
+      </div>
+
+      <div class="set-section">
+        <h3>🛰 Relays</h3>
+        <p>Relays hold the <b>encrypted</b> notes, chat and calendar so a device that was offline still gets them. They cannot read anything. Run one on each Umbrel and add its Tailscale address here once — every device on this code picks it up.</p>
+        <p id="net-main"></p>
+        <div id="relay-list"></div>
+        <div class="row"><input id="relay-url" class="txt" placeholder="umbrel.your-tailnet.ts.net" autocomplete="off" spellcheck="false"><input id="relay-name" class="txt short" placeholder="Name" maxlength="40" autocomplete="off"><button class="btn small" id="relay-add">Add relay</button></div>
+        <p id="my-role" style="margin-top:10px"></p>
+        <div class="row">
+          <button class="btn ghost small" id="role-main">Set this device as main relay</button>
+          <button class="btn ghost small" id="role-backup">Set this device as backup relay</button>
+          <button class="btn ghost small" id="role-member">Set as member</button>
+        </div>
+        <p>A phone or laptop relays only while MavPad is open on it. Before taking a relay role this device first pulls a full copy. Other devices:</p>
+        <div id="device-list"></div>
+      </div>
+
+      <div class="set-section">
+        <h3>⬇ Export</h3>
+        <p>Download a readable copy to this device. Anyone on this sync code can export. Each export is recorded below for everyone on the code (it cannot see text copied by hand).</p>
+        <div class="row">
+          <button class="btn ghost small" id="exp-notes">📝 Export notes</button>
+          <button class="btn ghost small" id="exp-chat">💬 Export chat</button>
+          <button class="btn ghost small" id="exp-cal">📅 Export calendar</button>
+        </div>
+        <div id="export-history"></div>
+      </div>
+
+      <div class="set-section">
         <h3>🤝 Shared pads</h3>
         <p>Invite someone to <b>one pad</b>, not the whole notebook. They never get your sync code, and they cannot open your other pads. Give them the invite from that pad’s ⋯ menu, or join one of theirs here.</p>
         <div class="row">
@@ -376,7 +544,7 @@ input,select{font:inherit;color:var(--text)}
       <div class="set-section">
         <h3>ℹ About</h3>
         <p class="ver" id="about-ver"></p>
-        <p>Single-file app. Notes live encrypted in this device's storage (IndexedDB). Sync is direct device-to-device; the relay never sees plaintext. No account, no tracking.</p>
+        <p>Single-file app. Notes live encrypted in this device's storage (IndexedDB). Sync goes through your own relays and directly between devices; relays only hold ciphertext. Every device keeps a full encrypted copy. Conflicts: the newest edit wins. No account, no tracking.</p>
       </div>
 
       <div class="set-section">
@@ -388,6 +556,25 @@ input,select{font:inherit;color:var(--text)}
       </div>
 
     </div>
+  </div>
+</div>
+
+<div id="ph-viewer" hidden>
+  <div class="pv-top">
+    <span id="pv-count"></span><span class="spacer"></span>
+    <button class="btn ghost small" id="pv-download">⬇ Download</button>
+    <button class="btn danger small" id="pv-delete">Delete</button>
+    <button class="icon-btn" id="pv-close" title="Close">✕</button>
+  </div>
+  <div class="pv-stage">
+    <button class="pv-nav" id="pv-prev" title="Previous">‹</button>
+    <img id="pv-img" alt="">
+    <button class="pv-nav" id="pv-next" title="Next">›</button>
+  </div>
+  <div class="pv-foot">
+    <input id="pv-caption" class="txt" placeholder="Add a caption" maxlength="500" autocomplete="off">
+    <div class="row"><label for="pv-album">Album</label><select id="pv-album" class="txt"></select></div>
+    <span id="pv-meta"></span><span id="pv-status"></span>
   </div>
 </div>
 
@@ -421,8 +608,8 @@ document.getElementById('install-btn').onclick=async()=>{
 /*__APP_START__*/
 const APP = {
   name: 'MavPad',
-  version: 'beta 0.3.0',
-  code: 3,                       // versionCode — matches GitHub release tag vN
+  version: 'beta 0.5.0',
+  code: 5,                       // versionCode — matches GitHub release tag vN
   repo: 'wilsonsamiano/secure-notepad',
   bmc: 'https://buymeacoffee.com/wilsonsamiano'
 };
@@ -504,16 +691,34 @@ function mergeRecords(local, incoming){
 const DBN='mavpad';
 function idbOpen(){
   return new Promise((res,rej)=>{
-    const r=indexedDB.open(DBN,2);
+    const r=indexedDB.open(DBN,4);
     r.onupgradeneeded=e=>{
       const db=e.target.result;
       if(!db.objectStoreNames.contains('notes')) db.createObjectStore('notes',{keyPath:'id'});
       if(!db.objectStoreNames.contains('topics')) db.createObjectStore('topics',{keyPath:'id'});
       if(!db.objectStoreNames.contains('meta')) db.createObjectStore('meta',{keyPath:'k'});
       if(!db.objectStoreNames.contains('passwords')) db.createObjectStore('passwords',{keyPath:'id'});
+      for(const s of ['chat','events','exports','config','albums']) if(!db.objectStoreNames.contains(s)) db.createObjectStore(s,{keyPath:'id'});
+      for(const s of ['photos','pixels']) if(!db.objectStoreNames.contains(s)) db.createObjectStore(s,{keyPath:'id'}).createIndex('meta',['updatedAt','del']);
     };
     r.onsuccess=e=>res(e.target.result);
     r.onerror=()=>rej(r.error);
+  });
+}
+function idbGet(db,s,k){ return new Promise((res,rej)=>{ const q=db.transaction(s).objectStore(s).get(k); q.onsuccess=()=>res(q.result); q.onerror=()=>rej(q.error); }); }
+/* [{id, updatedAt, deleted}] — from the 'meta' index when the store has one (no values loaded). */
+function idbMeta(db,s){
+  return new Promise((res,rej)=>{
+    const os=db.transaction(s).objectStore(s), out=[];
+    if(os.indexNames.contains('meta')){
+      const c=os.index('meta').openKeyCursor();
+      c.onsuccess=()=>{ const cur=c.result; if(!cur) return res(out); out.push({id:cur.primaryKey,updatedAt:cur.key[0],deleted:!!cur.key[1]}); cur.continue(); };
+      c.onerror=()=>rej(c.error);
+    }else{
+      const q=os.getAll();
+      q.onsuccess=()=>res((q.result||[]).map(r=>({id:r.id,updatedAt:r.updatedAt,deleted:!!r.deleted})));
+      q.onerror=()=>rej(q.error);
+    }
   });
 }
 function idbAll(db,s){ return new Promise((res,rej)=>{ const q=db.transaction(s).objectStore(s).getAll(); q.onsuccess=()=>res(q.result||[]); q.onerror=()=>rej(q.error); }); }
@@ -624,10 +829,11 @@ async function unlock(code, remember){
     // sanity: try decrypting one record if any exist (detects wrong code fast-ish)
     DB=DB||await idbOpen();
     KEY=key; CODE=code;
-    await loadAll();
+    await loadAll(); await loadNet(); await loadChat(); await loadEvents(); await loadExports(); await loadPhotos();
     if(remember) localStorage.setItem('mavpad.code',code);
     $('#lock').hidden=true; $('#app').hidden=false;
-    renderSidebar(); openFirstNote(); applyTheme(theme,false);
+    setView('notes'); renderSidebar(); openFirstNote(); applyTheme(theme,false);
+    renderNet(); renderExportHistory(); $('#name-input').value=myName();
     toast('Unlocked 🔓  AES-256 active');
     if(localStorage.getItem('mavpad.sync')!=='off') startSync();
   }catch(e){
@@ -637,10 +843,12 @@ async function unlock(code, remember){
   btn.disabled=false; btn.textContent='Unlock';
 }
 function lock(){
-  KEY=null; CODE=null; topics.clear(); notes.clear(); passwords.clear(); curNoteId=null;
-  showingPasswords=false;
-  shareKeyCache.clear();
   stopSync();
+  KEY=null; CODE=null; topics.clear(); notes.clear(); passwords.clear(); curNoteId=null;
+  chatMsgs=[]; events=[]; exportLog=[]; NET={relays:[],roles:{},names:{},updatedAt:0};
+  albums.clear(); photos.clear(); photoCache.clear(); phAlbum=null; closeViewer();
+  setView('notes');
+  shareKeyCache.clear();
   $('#app').hidden=true; $('#lock').hidden=false;
   $('#code-input').value=''; $('#lock-error').textContent='';
 }
@@ -896,22 +1104,6 @@ async function addImageFiles(files){
 }
 
 /* ---------- passwords (vault only — never sent with a pad invite) ---------- */
-function showNotes(){
-  showingPasswords=false;
-  const pv=$('#pass-view'); if(pv) pv.hidden=true;
-  $('#editor-wrap').hidden=false;
-  $('#toolbar').hidden=false;
-  $('#note-title').hidden=false;
-}
-function showPasswords(){
-  showingPasswords=true;
-  $('#editor-wrap').hidden=true;
-  $('#toolbar').hidden=true;
-  $('#note-title').hidden=true;
-  $('#pass-view').hidden=false;
-  renderPasswords();
-  if(sidebarIsOverlay()) closeSidebar();
-}
 function hostOf(url){
   try{ return new URL(String(url).includes('://')?url:'https://'+url).hostname.replace(/^www\./,''); }
   catch(e){ return ''; }
@@ -1064,35 +1256,465 @@ async function importPasswordCSV(file){
   toast('Imported '+added+' new, updated '+updated+(skipped?', skipped '+skipped:'')+'. Delete the CSV — it is not encrypted.');
 }
 
-/* ---------- sync (peer-to-peer, ciphertext only) ---------- */
-let peer=null, conns=new Set(), peerLoading=null;
+/* ---------- sync v2: relays + device mesh, ciphertext only ----------
+   Every device keeps a full encrypted copy in IndexedDB. A change is sent to
+   every live link:
+     - relays: MavPad relays on your own servers (WebSocket, wss://). They store
+       ciphertext and hand it to devices that were offline. Clients write to
+       every relay, and relays copy to each other, so one being down is fine.
+     - devices: other MavPad devices with the same code (WebRTC via PeerJS).
+       One online device is elected the temporary relay (the "hub"): it holds
+       the hub id the others dial, keeps a full copy, and passes changes on.
+       Main relay devices win the election, then backups, then members.
+   On every new link both sides swap a digest {kind:id -> [updatedAt, deleted]}
+   and send what the other lacks, so changes made offline go out on reconnect.
+   Any record newly applied here is forwarded to the other links (store and
+   forward); a record already known is ignored, so forwarding stops by itself.
+   Conflict rule: newest write wins (updatedAt); on a tie a delete wins. */
+const KIND_STORE={note:'notes',topic:'topics',password:'passwords',chat:'chat',event:'events',export:'exports',config:'config',album:'albums',photo:'photos',pixel:'pixels'};
+const STORE_KIND=Object.fromEntries(Object.entries(KIND_STORE).map(([k,s])=>[s,k]));
+const links=new Set();            // open links: {type:'relay'|'device', label, send(m), close(), q, last}
+let peerLoading=null, linkSeq=0;
 const padSlots=new Map();
-function setSyncUI(state,text){
-  const pill=$('#sync-pill');
-  pill.classList.toggle('on',state==='on');
-  pill.classList.toggle('working',state==='working');
-  $('#sync-text').textContent=text;
-  $('#sync-dot').style.background=state==='on'?'#4caf50':state==='working'?'var(--accent)':'#8a8a8a';
+function deviceId(){
+  let d=localStorage.getItem('mavpad.deviceId');
+  if(!d){ d='d'+rid(); localStorage.setItem('mavpad.deviceId',d); }
+  return d;
 }
-function setSyncDetail(t){ $('#sync-detail').textContent=t; }
+function myName(){ return (localStorage.getItem('mavpad.name')||'').trim(); }
+function isNewer(a,b){            // newest write wins; a delete wins a tie
+  if(!b) return true;
+  if(a.updatedAt!==b.updatedAt) return a.updatedAt>b.updatedAt;
+  return !!a.deleted&&!b.deleted;
+}
+function withKind(kind,rec){ return rec?Object.assign({},rec,{kind}):rec; }
+/* Metadata only (id, updatedAt, deleted). Photo stores read it from an index
+   key cursor, so comparing devices never loads the pictures themselves. */
+async function allMeta(){
+  const out=[];
+  for(const [kind,store] of Object.entries(KIND_STORE)) for(const m of await idbMeta(DB,store)) out.push(Object.assign({kind},m));
+  return out;
+}
+async function localDigest(){
+  const d={};
+  for(const r of await allMeta()) d[r.kind+':'+r.id]=[r.updatedAt,r.deleted?1:0];
+  return d;
+}
+/* Full records for 'kind:id' keys, sent a few at a time so big photos are not all held in memory. */
+async function sendKeys(link,keys){
+  for(let i=0;i<keys.length;i+=16){
+    const recs=[];
+    for(const k of keys.slice(i,i+16)){
+      const j=k.indexOf(':'), kind=k.slice(0,j), store=KIND_STORE[kind];
+      if(!store) continue;
+      const r=await idbGet(DB,store,k.slice(j+1));
+      if(r) recs.push(withKind(kind,r));
+    }
+    if(recs.length) sendRecs(link,recs);
+  }
+}
+function recBatches(recs){
+  const out=[]; let cur=[], sz=0;
+  for(const r of recs){ const s=(r.data?r.data.length:0)+200; if(cur.length&&sz+s>512*1024){ out.push(cur); cur=[]; sz=0; } cur.push(r); sz+=s; }
+  if(cur.length) out.push(cur);
+  return out;
+}
+function sendRecs(link,recs){ for(const b of recBatches(recs)) link.send({t:'recs',recs:b}); }
+/* Local change: store is already written; push to every live link. */
+function publish(recs){
+  recs=recs.filter(Boolean);
+  if(recs.length) links.forEach(l=>{ try{ sendRecs(l,recs); }catch(e){} });
+}
+let ingestChain=Promise.resolve();
+function ingest(recs,from){ const p=ingestChain.then(()=>ingestNow(recs,from)); ingestChain=p.catch(()=>{}); return p; }
+async function ingestNow(recs,from){
+  if(!KEY||!recs||!recs.length) return;
+  const byStore={};
+  for(const r of recs){ if(!r||!r.id||!KIND_STORE[r.kind]) continue; (byStore[KIND_STORE[r.kind]]=byStore[KIND_STORE[r.kind]]||[]).push(r); }
+  const applied=[];
+  for(const [store,list] of Object.entries(byStore)){
+    for(const rec of list){
+      if(!isNewer(rec,await idbGet(DB,store,rec.id))) continue;
+      const clean=Object.assign({},rec,{del:rec.deleted?1:0}); delete clean.kind;
+      await idbPut(DB,store,clean); applied.push(rec);
+    }
+  }
+  if(!applied.length) return;
+  links.forEach(l=>{ if(l!==from) try{ sendRecs(l,applied); }catch(e){} });   // store and forward
+  await afterIngest(applied);
+}
+async function afterIngest(applied){
+  const kinds=new Set(applied.map(r=>r.kind));
+  if(kinds.has('note')||kinds.has('topic')||kinds.has('password')){
+    await loadAll(); renderSidebar(); refreshOpenNote();
+    if(curView==='passwords') renderPasswords();
+    const n=applied.filter(r=>r.kind==='note'||r.kind==='topic'||r.kind==='password').length;
+    toast('⬇ Synced '+n+' change'+(n>1?'s':'')+' from another device');
+  }
+  if(kinds.has('config')){ await loadNet(); connectRelays(); renderNet(); }
+  if(kinds.has('chat')){
+    await loadChat(); renderChat();
+    const fresh=applied.filter(r=>r.kind==='chat').length;
+    if(curView!=='chat') { unreadChat+=fresh; renderViewTabs(); }
+  }
+  if(kinds.has('event')){ await loadEvents(); renderCalendar(); }
+  if(kinds.has('export')){ await loadExports(); renderExportHistory(); }
+  if(kinds.has('album')||kinds.has('photo')||kinds.has('pixel')){
+    await loadPhotos(); renderPhotos();
+    const cur=viewerList[viewerIdx];
+    if(cur&&!$('#ph-viewer').hidden&&applied.some(r=>r.id===cur.id)) showViewer();
+  }
+}
+
+/* --- link protocol (same messages for relays and devices) --- */
+function addLink(link){
+  link.id=++linkSeq; link.q=Promise.resolve(); link.last=Date.now(); link.pending=new Map();
+  links.add(link); refreshSyncStatus(); renderNet();
+  sayHello(link);
+  syncLink(link);
+}
+function dropLink(link){
+  if(!links.delete(link)) return;
+  link.pending.forEach(fn=>fn(false)); link.pending.clear();
+  refreshSyncStatus(); renderNet();
+}
+function sayHello(link){
+  try{ link.send({t:'dev', id:deviceId(), name:myName()||'Unnamed device', rank:myRank()}); }catch(e){}
+}
+let reqSeq=0;
+/* Swap digests with one link. Resolves true once the other side has answered. */
+async function syncLink(link,timeout){
+  const req=++reqSeq;
+  const done=new Promise(res=>{
+    link.pending.set(req,res);
+    setTimeout(()=>{ if(link.pending.delete(req)) res(false); }, timeout||20000);
+  });
+  try{ link.send({t:'have', have:await localDigest(), req}); }catch(e){ link.pending.delete(req); return false; }
+  return done;
+}
+function onLinkMsg(link,msg){
+  link.last=Date.now();
+  link.q=link.q.then(()=>handleLinkMsg(link,msg)).catch(()=>{});
+}
+async function handleLinkMsg(link,msg){
+  if(!msg||!KEY) return;
+  if(msg.t==='recs') return ingest(msg.recs,link);
+  if(msg.t==='have'){
+    const have=msg.have||{}, mine=[], want=[], seen=new Set();
+    for(const r of await allMeta()){
+      const k=r.kind+':'+r.id; seen.add(k); const h=have[k];
+      if(!h||isNewer(r,{updatedAt:h[0],deleted:!!h[1]})) mine.push(k);
+      else if(isNewer({updatedAt:h[0],deleted:!!h[1]},r)) want.push(k);
+    }
+    for(const k of Object.keys(have)) if(!seen.has(k)) want.push(k);
+    await sendKeys(link,mine);
+    if(want.length) link.send({t:'want',keys:want});
+    link.send({t:'synced',req:msg.req});
+    return;
+  }
+  if(msg.t==='want'){
+    await sendKeys(link,(msg.keys||[]).map(String));
+    return;
+  }
+  if(msg.t==='synced'){ await ingestChain; const fn=link.pending.get(msg.req); if(fn){ link.pending.delete(msg.req); fn(true); } return; }
+  if(msg.t==='joined'){ link.relayName=msg.relay; renderNet(); return; }
+  if(msg.t==='dev'){ link.dev={id:String(msg.id||''),name:String(msg.name||'').slice(0,40),rank:+msg.rank}; link.label=link.dev.name; maybeYield(link); renderNet(); refreshSyncStatus(); return; }
+  if(msg.t==='ping'){ link.send({t:'pong'}); return; }
+}
+/* liveness: ping every 10 s, drop a link that is silent for 35 s */
+setInterval(()=>{
+  links.forEach(l=>{
+    if(Date.now()-l.last>35000){ try{ l.close(); }catch(e){} dropLink(l); return; }
+    try{ l.send({t:'ping'}); }catch(e){}
+  });
+},10000);
+
+/* --- network config (synced, encrypted): relays + roles --- */
+let NET={relays:[],roles:{},names:{},updatedAt:0};
+async function loadNet(){
+  const r=(await idbAll(DB,'config')).find(x=>x.id==='net');
+  NET={relays:[],roles:{},names:{},updatedAt:0};
+  if(r&&!r.deleted){ try{ const d=await decJSON(KEY,r); NET=Object.assign(NET,d,{updatedAt:r.updatedAt}); }catch(e){} }
+}
+async function saveNet(){
+  NET.updatedAt=Math.max(Date.now(),(NET.updatedAt||0)+1);
+  const pack=await encJSON(KEY,{relays:NET.relays,roles:NET.roles,names:NET.names});
+  const rec={id:'net',iv:pack.iv,data:pack.data,updatedAt:NET.updatedAt,deleted:false};
+  await idbPut(DB,'config',rec); publish([withKind('config',rec)]);
+  renderNet(); connectRelays();
+}
+function normRelayUrl(s){
+  s=String(s||'').trim(); if(!s) return '';
+  if(/^https?:\/\//i.test(s)) s=s.replace(/^http/i,'ws');
+  if(!/^wss?:\/\//i.test(s)) s='wss://'+s;
+  try{ const u=new URL(s); return u.protocol+'//'+u.host+(u.pathname==='/'?'':u.pathname); }catch(e){ return ''; }
+}
+const relayEnt=url=>'relay:'+url, devEnt=id=>'dev:'+id;
+function roleOf(ent){ return NET.roles[ent]||'member'; }
+function myRank(){ const r=roleOf(devEnt(deviceId())); return r==='main'?0:r==='backup'?1:2; }
+function entLabel(ent){
+  if(ent.startsWith('relay:')){ const r=NET.relays.find(x=>relayEnt(x.url)===ent); return (r&&r.name)||ent.slice(6); }
+  if(ent===devEnt(deviceId())) return (myName()||'This device')+' (this device)';
+  return NET.names[ent]||'Device '+ent.slice(4,10);
+}
+/* Only one main: making X main turns the old main into a backup. */
+function setRoleLocal(ent,role){
+  if(role==='main') for(const [e,r] of Object.entries(NET.roles)) if(r==='main'&&e!==ent) NET.roles[e]='backup';
+  if(role==='member') delete NET.roles[ent]; else NET.roles[ent]=role;
+}
+function entReachable(ent){
+  if(ent===devEnt(deviceId())) return true;
+  if(ent.startsWith('relay:')) return [...links].some(l=>l.type==='relay'&&relayEnt(l.url)===ent);
+  return [...links].some(l=>l.dev&&devEnt(l.dev.id)===ent);
+}
+/* The relay serving right now: the main if reachable, else the first reachable backup. */
+function activeRelay(){
+  const ents=Object.entries(NET.roles);
+  const main=ents.find(([,r])=>r==='main');
+  if(main&&entReachable(main[0])) return {ent:main[0],role:'main'};
+  const b=ents.find(([e,r])=>r==='backup'&&entReachable(e));
+  return b?{ent:b[0],role:'backup',mainDown:!!main}:null;
+}
+async function setThisDeviceRole(role){
+  const me=devEnt(deviceId());
+  if(role==='main'||role==='backup'){
+    if(!myName()){ const n=prompt('Name this device so the team can see who holds the relay role:',''); if(n&&n.trim()) setMyName(n); }
+    toast('Pulling a full copy of the encrypted notes first…');
+    const ok=await fullPull();
+    if(!ok&&!confirm('No other device or relay answered, so this device may not have every note yet. Set the role anyway?')) return;
+  }
+  setRoleLocal(me,role);
+  NET.names[me]=myName()||'Unnamed device';
+  await saveNet();
+  if(role==='main') meshRestart();          // claim the hub now
+  toast(role==='main'?'This device is now the main relay':role==='backup'?'This device is now a backup relay':'This device is now a member');
+}
+/* Ask every live link for everything it has; true if at least one answered. */
+async function fullPull(){
+  const ls=[...links];
+  if(!ls.length) return false;
+  const res=await Promise.all(ls.map(l=>syncLink(l,20000)));
+  await ingestChain;
+  return res.some(Boolean);
+}
+
+/* --- relay links (WebSocket) --- */
+const relayState=new Map();   // url -> {ws, status, timer, backoff, link}
+async function relayRoom(){ return 'mvr-'+(await sha256hex('mavpad-relay-room-v1:'+CODE)).slice(0,32); }
+function connectRelays(){
+  if(!syncWanted||!KEY) return;
+  const want=new Set(NET.relays.map(r=>r.url));
+  for(const [url,st] of relayState) if(!want.has(url)){ clearTimeout(st.timer); st.dead=true; try{ st.ws&&st.ws.close(); }catch(e){} relayState.delete(url); }
+  for(const url of want) if(!relayState.has(url)) openRelay(url);
+}
+function openRelay(url){
+  const st=relayState.get(url)||{backoff:2000};
+  relayState.set(url,st);
+  clearTimeout(st.timer);
+  if(st.dead||!syncWanted) return;
+  st.status='connecting'; renderNet();
+  let ws;
+  try{ ws=new WebSocket(url); }catch(e){ st.status='down'; st.err='bad address'; return retryRelay(url,st); }
+  st.ws=ws;
+  const openTimer=setTimeout(()=>{ try{ ws.close(); }catch(e){} },8000);
+  ws.onopen=async()=>{
+    clearTimeout(openTimer);
+    st.status='up'; st.backoff=2000; st.err='';
+    ws.send(JSON.stringify({t:'join',room:await relayRoom()}));
+    const link={type:'relay',url,label:relayName(url),send:m=>ws.send(JSON.stringify(m)),close:()=>ws.close()};
+    st.link=link; addLink(link);
+  };
+  ws.onmessage=e=>{ let m; try{ m=JSON.parse(e.data); }catch(err){ return; } if(st.link) onLinkMsg(st.link,m); };
+  ws.onclose=()=>{
+    clearTimeout(openTimer);
+    if(st.link){ dropLink(st.link); st.link=null; }
+    if(relayState.get(url)!==st) return;
+    st.status='down'; if(!st.err) st.err='unreachable';
+    retryRelay(url,st);
+  };
+  ws.onerror=()=>{ st.err='unreachable'; };
+}
+function retryRelay(url,st){
+  renderNet(); refreshSyncStatus();
+  if(st.dead||!syncWanted) return;
+  st.timer=setTimeout(()=>openRelay(url),st.backoff);
+  st.backoff=Math.min(st.backoff*2,30000);
+}
+function relayName(url){ const r=NET.relays.find(x=>x.url===url); return (r&&r.name)||url.replace(/^wss?:\/\//,''); }
+function kickRelays(){ for(const [url,st] of relayState) if(st.status!=='up'&&st.status!=='connecting'){ st.backoff=2000; openRelay(url); } }
+
+/* --- device mesh (WebRTC via PeerJS), one elected hub --- */
+const mesh={peer:null, role:'idle', hubId:null, upLink:null, timer:null, tries:0, err:'', log:[]};
+/* PeerJS destroy() emits 'disconnected' before it marks itself destroyed, so a
+   reconnect-on-disconnect handler revives the peer and it keeps holding its id
+   with no one answering. Mark our own peers dead first and reconnect later. */
+function killPeer(p){ if(!p) return; p._mpDead=true; try{ p.destroy(); }catch(e){} }
+function keepPeer(p){ p.on('disconnected',()=>setTimeout(()=>{ if(!p._mpDead&&!p.destroyed&&p.disconnected) try{ p.reconnect(); }catch(e){} },1500)); }
+function mlog(s){ mesh.log.push(new Date().toISOString().slice(11,19)+' '+s); if(mesh.log.length>60) mesh.log.shift(); }
+function peerOpts(){
+  try{ const o=JSON.parse(localStorage.getItem('mavpad.peerServer')||'null'); if(o&&typeof o==='object') return Object.assign({debug:0},o); }catch(e){}
+  return {debug:0};
+}
 function ensurePeerJS(){
   if(window.Peer) return Promise.resolve();
   if(peerLoading) return peerLoading;
   peerLoading=new Promise((res,rej)=>{
     const s=document.createElement('script');
     s.src='https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js';
-    s.onload=()=>res(); s.onerror=()=>rej(new Error('PeerJS CDN unreachable'));
+    s.onload=()=>res(); s.onerror=()=>{ peerLoading=null; s.remove(); rej(new Error('PeerJS CDN unreachable')); };
     document.head.appendChild(s);
   });
   return peerLoading;
 }
-async function snapshot(){
-  return {t:'hello', notes:await idbAll(DB,'notes'), topics:await idbAll(DB,'topics'), passwords:await idbAll(DB,'passwords')};
+function meshStop(){
+  clearTimeout(mesh.timer);
+  if(mesh.peer){ killPeer(mesh.peer); }
+  mesh.peer=null; mesh.role='idle'; mesh.upLink=null;
+  [...links].filter(l=>l.type==='device').forEach(l=>{ try{ l.close(); }catch(e){} dropLink(l); });
 }
+function meshLater(fn,ms){ clearTimeout(mesh.timer); mesh.timer=setTimeout(fn,ms); }
+async function meshStart(){
+  if(!syncWanted||!KEY) return;
+  try{ await ensurePeerJS(); }
+  catch(e){ mesh.err='device sync needs internet once (loads PeerJS)'; refreshSyncStatus(); return meshLater(meshStart,20000); }
+  mesh.hubId='mavpad2-'+(await sha256hex('mavpad-hub-v2:'+CODE)).slice(0,24);
+  meshJoin();
+}
+function meshRestart(){ meshStop(); if(syncWanted) meshLater(meshStart,300); }
+function wirePeerConn(conn,isUp){
+  let link=null;
+  const up=()=>{
+    if(link) return;
+    link={type:'device',label:'Device',send:m=>{ if(conn.open) conn.send(m); },close:()=>conn.close(),conn};
+    if(isUp) mesh.upLink=link;
+    addLink(link);
+  };
+  conn.on('open',up);
+  if(conn.open) up();
+  conn.on('data',m=>{ if(link) onLinkMsg(link,m); });
+  const gone=()=>{
+    if(!link) return;
+    dropLink(link);
+    if(isUp&&mesh.upLink===link){ mesh.upLink=null; if(mesh.role==='member') meshLater(meshJoin,500+Math.random()*1000); }
+    link=null;
+  };
+  conn.on('close',gone); conn.on('error',gone);
+}
+/* Dial the hub as a member. No answer -> try to become the hub. */
+function meshJoin(){
+  if(!syncWanted||!KEY||!window.Peer) return;
+  if(mesh.peer&&(mesh.role!=='member'||mesh.peer.destroyed||mesh.peer.disconnected)){ killPeer(mesh.peer); mesh.peer=null; }
+  mesh.role='member'; refreshSyncStatus();
+  const dial=()=>{
+    mlog('dial hub');
+    const conn=mesh.peer.connect(mesh.hubId,{reliable:true});
+    if(!conn) return meshLater(meshJoin,3000);
+    wirePeerConn(conn,true);
+    meshLater(()=>{ if(!mesh.upLink){ try{ conn.close(); }catch(e){} meshClaim(); } },10000);   // hub silent
+  };
+  if(mesh.peer&&mesh.peer.open) return dial();
+  const p=new Peer(peerOpts()); mesh.peer=p;
+  p.on('open',()=>{ mesh.err=''; dial(); });
+  p.on('error',err=>{
+    const t=err&&err.type; mlog('member error '+t);
+    if(t==='peer-unavailable'){ meshClaim(); return; }            // nobody is hub
+    if(t==='network'||t==='server-error'||t==='socket-error'||t==='socket-closed'){
+      mesh.err='device finder unreachable'; refreshSyncStatus();
+      killPeer(p); if(mesh.peer===p) mesh.peer=null;
+      meshLater(meshJoin,15000);
+    }
+  });
+  keepPeer(p);
+}
+/* Become the temporary relay (hub). Main relays try first, then backups, then members. */
+function meshClaim(){
+  if(!syncWanted||mesh.role==='hub') return;
+  const delay=myRank()*1500+Math.random()*800;
+  meshLater(()=>{
+    if(!syncWanted||mesh.upLink) return;
+    if(mesh.peer){ killPeer(mesh.peer); mesh.peer=null; }
+    mlog('claim hub');
+    const p=new Peer(mesh.hubId,peerOpts()); mesh.peer=p; mesh.role='claiming';
+    p.on('open',()=>{ mlog('is hub'); mesh.role='hub'; mesh.err=''; refreshSyncStatus(); });
+    p.on('connection',c=>wirePeerConn(c,false));
+    p.on('error',err=>{
+      const t=err&&err.type; mlog('hub error '+t);
+      if(t==='unavailable-id'){ killPeer(p); if(mesh.peer===p) mesh.peer=null; meshLater(meshJoin,800+Math.random()*800); return; }
+      if(t==='network'||t==='server-error'||t==='socket-error'||t==='socket-closed'){
+        mesh.err='device finder unreachable'; killPeer(p); if(mesh.peer===p) mesh.peer=null;
+        mesh.role='idle'; refreshSyncStatus(); meshLater(meshJoin,15000);
+      }
+    });
+    keepPeer(p);
+  },delay);
+}
+/* A higher-ranked device (main/backup relay) joined while we are hub: hand the hub over. */
+function maybeYield(link){
+  if(mesh.role!=='hub'||!link.dev||!(link.dev.rank<myRank())) return;
+  const hubPeer=mesh.peer;
+  setTimeout(()=>{
+    if(mesh.peer!==hubPeer||mesh.role!=='hub') return;
+    mlog('yield hub to '+link.dev.name);
+    killPeer(hubPeer);
+    mesh.peer=null; mesh.role='member';
+    [...links].filter(l=>l.type==='device').forEach(l=>{ try{ l.close(); }catch(e){} dropLink(l); });
+    meshLater(meshJoin,2500+Math.random()*1000);
+  },1500);   // give the digest swap a moment so nothing is in flight
+}
+
+/* --- start / stop / status --- */
+let syncWanted=false;
+function startSync(){
+  if(!KEY||syncWanted) return;
+  syncWanted=true; syncOn=true;
+  $('#sync-toggle-btn').textContent='⏹ Stop sync';
+  refreshSyncStatus();
+  connectRelays();
+  meshStart();
+  startAllPadSync();
+}
+function stopSync(){
+  syncWanted=false; syncOn=false;
+  for(const [,st] of relayState){ st.dead=true; clearTimeout(st.timer); try{ st.ws&&st.ws.close(); }catch(e){} }
+  relayState.clear();
+  meshStop();
+  [...links].forEach(dropLink);
+  stopAllPads();
+  $('#sync-toggle-btn').textContent='🔗 Start sync';
+  refreshSyncStatus();
+}
+window.addEventListener('online',()=>{ if(syncWanted){ kickRelays(); if(!links.size) meshRestart(); } });
+document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible'&&syncWanted){ kickRelays(); if(mesh.role==='idle'||(mesh.peer&&mesh.peer.destroyed)) meshRestart(); } });
+function setSyncUI(state,text){
+  const pill=$('#sync-pill');
+  pill.classList.toggle('on',state==='on');
+  pill.classList.toggle('working',state==='working');
+  $('#sync-text').textContent=text;
+  $('#sync-dot').style.background=state==='on'?'#4caf50':state==='working'?'var(--accent)':'#8a8a8a';
+  pill.title=text;
+}
+function setSyncDetail(t){ $('#sync-detail').textContent=t; }
+function refreshSyncStatus(){
+  if(!$('#sync-pill')) return;
+  const relays=[...links].filter(l=>l.type==='relay'), devs=[...links].filter(l=>l.type==='device');
+  if(!syncWanted){ setSyncUI('off','Sync off'); setSyncDetail('Sync is off. Changes stay on this device.'); return; }
+  const parts=[];
+  if(relays.length) parts.push(relays.length+' relay'+(relays.length>1?'s':''));
+  if(devs.length) parts.push(devs.length+' device'+(devs.length>1?'s':''));
+  if(parts.length){
+    setSyncUI('on','Synced');
+    setSyncDetail('Connected to '+parts.join(' and ')+'. Changes go out live.'+(mesh.role==='hub'?' This device is the temporary relay for other devices.':''));
+  }else{
+    const trying=NET.relays.length||mesh.role!=='idle';
+    setSyncUI(trying?'working':'off', trying?'Waiting':'Offline');
+    setSyncDetail((mesh.role==='hub'?'Waiting for another device with your code (this device holds the meeting point). ':'Looking for a relay or another device with your code… ')+
+      (mesh.err?'('+mesh.err+') ':'')+'Changes are saved here and go out when one is reachable.');
+  }
+}
+
 async function broadcastOp(op){
-  const m=Object.assign({t:'op'},op);
-  if(syncOn) conns.forEach(c=>{ try{ if(c.open) c.send(m); }catch(e){} });
-  const topicId=op.kind==='topic'?op.rec.id:(op.rec&&op.rec.topicId);
+  if(op.rec) publish([withKind(op.kind,op.rec)]);
+  const topicId=op.kind==='topic'?op.rec&&op.rec.id:(op.rec&&op.rec.topicId);
   const t=topicId&&topics.get(topicId);
   if(!t||!t.shareCode||!op.rec) return;
   const slot=padSlots.get(normCode(t.shareCode));
@@ -1102,87 +1724,19 @@ async function broadcastOp(op){
   const pm={t:'op',kind:op.kind,rec};
   slot.conns.forEach(c=>{ try{ if(c.open) c.send(pm); }catch(e){} });
 }
+/* Records from a pad invite or a backup file go through the same merge + forward path. */
 async function applyIncoming(kind,recs){
   if(!recs||!recs.length) return;
-  const store=kind==='note'||kind==='notes'?'notes':(kind==='password'||kind==='passwords')?'passwords':'topics';
-  const local=new Map((await idbAll(DB,store)).map(r=>[r.id,r]));
-  const applied=mergeRecords(local,recs);
-  for(const id of applied) await idbPut(DB,store,local.get(id));
-  if(applied.length){
-    await loadAll(); renderSidebar(); refreshOpenNote();
-    if(showingPasswords) renderPasswords();
-    toast('⬇ Synced '+applied.length+' change'+(applied.length>1?'s':'')+' from another device');
-  }
+  const k=STORE_KIND[kind]||kind;
+  return ingest(recs.map(r=>withKind(k,r)),null);
 }
 function refreshOpenNote(){
+  if(curView!=='notes') return;
   const n=notes.get(curNoteId);
   if(!n){ if(curNoteId) openFirstNote(); return; }
   const typing=document.activeElement===$('#editor')||document.activeElement===$('#note-title');
   if(typing) toast('This note changed on another device','Load',()=>openNote(curNoteId));
   else openNote(curNoteId);
-}
-async function handleSyncMsg(msg,conn){
-  if(!msg||!KEY) return;
-  if(msg.t==='hello'){
-    await applyIncoming('topics',msg.topics||[]);
-    await applyIncoming('notes',msg.notes||[]);
-    await applyIncoming('passwords',msg.passwords||[]);
-    if(!conn._answeredHello){
-      conn._answeredHello=true;
-      try{ conn.send(await snapshot()); }catch(e){}
-    }
-  }else if(msg.t==='op'){
-    await applyIncoming(msg.kind,[msg.rec]);
-  }
-}
-function wireConn(conn){
-  conns.add(conn);
-  conn.on('open',async()=>{
-    syncOn=true; setSyncUI('on','Synced');
-    setSyncDetail('Connected — changes sync live between devices.');
-    $('#sync-toggle-btn').textContent='⏹ Stop sync';
-    try{ conn.send(await snapshot()); }catch(e){}
-  });
-  conn.on('data',msg=>handleSyncMsg(msg,conn));
-  const gone=()=>{ conns.delete(conn); if(syncOn&&!conns.size&&peer) setSyncDetail('Waiting for another device with your code…'); };
-  conn.on('close',gone); conn.on('error',gone);
-}
-async function startSync(){
-  if(syncOn||!KEY) return;
-  setSyncUI('working','Connecting…');
-  try{ await ensurePeerJS(); }
-  catch(e){ setSyncUI('off','Offline'); toast('Sync needs internet the first time (loads PeerJS)'); return; }
-  startAllPadSync();
-  const room=await roomIdFor(CODE);
-  setSyncDetail('Looking for devices with your code…');
-  const p=new Peer(room);
-  p.on('open',()=>{
-    peer=p; syncOn=true; setSyncUI('on','Synced');
-    setSyncDetail('Hosting the sync room. On your other device: enter the same code, unlock, press Sync.');
-    $('#sync-toggle-btn').textContent='⏹ Stop sync';
-  });
-  p.on('connection',c=>wireConn(c));
-  p.on('error',err=>{
-    if(err&&err.type==='unavailable-id'){
-      try{ p.destroy(); }catch(e){}
-      const c2=new Peer();   // a device is already hosting — join it
-      c2.on('open',()=>{ peer=c2; wireConn(c2.connect(room,{reliable:true})); });
-      c2.on('error',()=>{ syncOn=false; setSyncUI('off','Offline'); setSyncDetail('Could not reach the other device. Is it online with sync on?'); $('#sync-toggle-btn').textContent='🔗 Start sync'; });
-    }else{
-      syncOn=false; setSyncUI('off','Offline');
-      setSyncDetail('Sync error: '+(err&&err.type||'unknown')+'. Try again.');
-      $('#sync-toggle-btn').textContent='🔗 Start sync';
-    }
-  });
-  p.on('disconnected',()=>{ try{ p.reconnect(); }catch(e){} });
-}
-function stopSync(){
-  syncOn=false;
-  conns.forEach(c=>{ try{ c.close(); }catch(e){} }); conns.clear();
-  if(peer){ try{ peer.destroy(); }catch(e){} peer=null; }
-  stopAllPads();
-  setSyncUI('off','Offline'); setSyncDetail(localStorage.getItem('mavpad.sync')==='off'?'Sync is off.':'Sync starts automatically.');
-  $('#sync-toggle-btn').textContent='🔗 Start sync';
 }
 
 /* ---------- one pad, not the whole notebook ---------- */
@@ -1202,7 +1756,7 @@ function stopPad(code){
   code=normCode(code);
   const s=padSlots.get(code); if(!s) return;
   s.conns.forEach(c=>{ try{ c.close(); }catch(e){} });
-  if(s.peer){ try{ s.peer.destroy(); }catch(e){} }
+  if(s.peer){ killPeer(s.peer); }
   padSlots.delete(code);
 }
 function stopAllPads(){ [...padSlots.keys()].forEach(stopPad); }
@@ -1268,19 +1822,19 @@ async function startPadSync(raw){
   const room=await padRoomFor(code);
   const slot={peer:null, conns:new Set(), code};
   padSlots.set(code, slot);
-  const p=new Peer(room);
+  const p=new Peer(room,peerOpts());
   slot.peer=p;
   p.on('connection', c=>wirePad(code, c));
   p.on('error', err=>{
     if(err&&err.type==='unavailable-id'){
-      try{ p.destroy(); }catch(e){}
-      const c2=new Peer();
+      killPeer(p);
+      const c2=new Peer(peerOpts());
       slot.peer=c2;
       c2.on('open', ()=>{ const conn=c2.connect(room,{reliable:true}); if(conn) wirePad(code, conn); });
       c2.on('error', ()=>{ padSlots.delete(code); });
     }else padSlots.delete(code);
   });
-  p.on('disconnected', ()=>{ try{ p.reconnect(); }catch(e){} });
+  keepPeer(p);
 }
 function startAllPadSync(){
   const seen=new Set();
@@ -1344,9 +1898,525 @@ async function joinSharedPad(raw){
   const input=$('#join-code-input'); if(input) input.value='';
 }
 
+/* ---------- views: notes / passwords / chat / calendar ---------- */
+let curView='notes', unreadChat=0;
+function setView(v){
+  curView=v; showingPasswords=v==='passwords';
+  $('#editor-wrap').hidden=v!=='notes';
+  $('#toolbar').hidden=v!=='notes';
+  $('#note-title').hidden=v!=='notes';
+  $('#pass-view').hidden=v!=='passwords';
+  $('#chat-view').hidden=v!=='chat';
+  $('#cal-view').hidden=v!=='calendar';
+  $('#photo-view').hidden=v!=='photos';
+  $('#view-label').hidden=v==='notes';
+  $('#view-label').textContent=v==='chat'?'💬 Team chat':v==='calendar'?'📅 Calendar':v==='photos'?'🖼 Photos':v==='passwords'?'🔑 Passwords':'';
+  if(v==='chat'){ unreadChat=0; renderChat(); setTimeout(()=>{ const l=$('#chat-list'); l.scrollTop=l.scrollHeight; },0); }
+  if(v==='calendar') renderCalendar();
+  if(v==='photos') renderPhotos();
+  if(v==='passwords') renderPasswords();
+  if(v!=='notes'){ $('#wordcount').textContent=''; $('#note-time').textContent=''; } else updateStatusbar();
+  renderViewTabs();
+  if(sidebarIsOverlay()) closeSidebar();
+}
+function renderViewTabs(){
+  document.querySelectorAll('#view-tabs .vt').forEach(b=>b.classList.toggle('sel',b.dataset.view===curView));
+  const badge=$('#chat-badge'); if(badge){ badge.textContent=unreadChat?String(unreadChat):''; badge.hidden=!unreadChat; }
+}
+function showNotes(){ if(curView!=='notes') setView('notes'); }
+function showPasswords(){ setView('passwords'); }
+
+/* ---------- display name (per device, editable; old records keep the name they were made with) ---------- */
+function setMyName(n){
+  n=String(n||'').trim().slice(0,40);
+  localStorage.setItem('mavpad.name',n);
+  links.forEach(sayHello);
+  const me=devEnt(deviceId());
+  if(KEY&&NET.roles[me]&&NET.names[me]!==n){ NET.names[me]=n||'Unnamed device'; saveNet(); }
+  renderNet(); renderChat();
+}
+function needName(){
+  if(myName()) return true;
+  const n=prompt('Your display name (shown on your messages, events and exports — you can change it in Settings):','');
+  if(!n||!n.trim()) return false;
+  setMyName(n); if($('#name-input')) $('#name-input').value=myName();
+  return true;
+}
+
+/* ---------- generic encrypted append/edit records (chat, events, exports) ---------- */
+async function putSyncRec(kind,id,obj,updatedAt){
+  const pack=await encJSON(KEY,obj);
+  const rec={id,iv:pack.iv,data:pack.data,updatedAt,deleted:false};
+  await idbPut(DB,KIND_STORE[kind],rec);
+  publish([withKind(kind,rec)]);
+  return rec;
+}
+async function decryptStore(store){
+  const out=[];
+  for(const r of await idbAll(DB,store)){
+    if(r.deleted) continue;
+    try{ out.push(Object.assign({id:r.id,updatedAt:r.updatedAt},await decJSON(KEY,r))); }catch(e){}
+  }
+  return out;
+}
+
+/* ---------- chat: append-only, ordered by send time ---------- */
+let chatMsgs=[];
+async function loadChat(){ chatMsgs=(await decryptStore('chat')).sort((a,b)=>(a.at-b.at)||(a.id<b.id?-1:1)); }
+function renderChat(){
+  const box=$('#chat-list'); if(!box||curView!=='chat') return;
+  const atBottom=box.scrollHeight-box.scrollTop-box.clientHeight<60;
+  box.innerHTML='';
+  if(!chatMsgs.length){ const p=document.createElement('p'); p.className='pass-help'; p.textContent='No messages yet. Everyone on this sync code sees this chat. Messages are encrypted with the code.'; box.appendChild(p); }
+  let lastDay='';
+  for(const m of chatMsgs){
+    const day=new Date(m.at).toDateString();
+    if(day!==lastDay){ lastDay=day; const d=document.createElement('div'); d.className='chat-day'; d.textContent=new Date(m.at).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short',year:'numeric'}); box.appendChild(d); }
+    const div=document.createElement('div'); div.className='msg'+(m.dev===deviceId()?' mine':'');
+    const head=document.createElement('div'); head.className='msg-head';
+    const who=document.createElement('b'); who.textContent=m.name||'Unnamed';
+    const when=document.createElement('span'); when.textContent=new Date(m.at).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+    head.append(who,when);
+    const body=document.createElement('div'); body.className='msg-body'; body.textContent=m.text||'';
+    div.append(head,body); box.appendChild(div);
+  }
+  const hint=$('#chat-offline'); if(hint) hint.hidden=links.size>0;
+  if(atBottom) box.scrollTop=box.scrollHeight;
+}
+async function sendChat(){
+  const inp=$('#chat-input'); const text=inp.value.trim();
+  if(!text||!KEY) return;
+  if(!needName()) return;
+  const at=Date.now();
+  const id='c'+at.toString(36)+rid();
+  inp.value='';
+  await putSyncRec('chat',id,{name:myName(),dev:deviceId(),text:text.slice(0,4000),at},at);
+  await loadChat(); renderChat();
+  const l=$('#chat-list'); l.scrollTop=l.scrollHeight;
+  if(!links.size) toast('Saved — it sends when a relay or another device is reachable');
+}
+
+/* ---------- calendar: shared events, month view ---------- */
+let events=[], calMonth=null, calDay=null;
+function ymd(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+async function loadEvents(){ events=(await decryptStore('events')).sort((a,b)=>(a.date+(a.time||'')).localeCompare(b.date+(b.time||''))); }
+function renderCalendar(){
+  if(curView!=='calendar') return;
+  const now=new Date();
+  if(!calMonth) calMonth=new Date(now.getFullYear(),now.getMonth(),1);
+  if(!calDay) calDay=ymd(now);
+  $('#cal-title').textContent=calMonth.toLocaleDateString('en-GB',{month:'long',year:'numeric'});
+  const grid=$('#cal-grid'); grid.innerHTML='';
+  for(const w of ['Mon','Tue','Wed','Thu','Fri','Sat','Sun']){ const h=document.createElement('div'); h.className='cal-wd'; h.textContent=w; grid.appendChild(h); }
+  const byDay={}; for(const e of events) (byDay[e.date]=byDay[e.date]||[]).push(e);
+  const start=new Date(calMonth); start.setDate(1-((calMonth.getDay()+6)%7));
+  for(let i=0;i<42;i++){
+    const d=new Date(start); d.setDate(start.getDate()+i);
+    const key=ymd(d), evs=byDay[key]||[];
+    const b=document.createElement('button'); b.type='button';
+    b.className='cal-cell'+(d.getMonth()!==calMonth.getMonth()?' other':'')+(key===ymd(now)?' today':'')+(key===calDay?' sel':'');
+    const num=document.createElement('span'); num.className='cal-num'; num.textContent=d.getDate(); b.appendChild(num);
+    for(const e of evs.slice(0,2)){ const t=document.createElement('span'); t.className='cal-ev'; t.textContent=(e.time?e.time+' ':'')+e.title; b.appendChild(t); }
+    if(evs.length>2){ const t=document.createElement('span'); t.className='cal-more'; t.textContent='+'+(evs.length-2)+' more'; b.appendChild(t); }
+    b.onclick=()=>{ calDay=key; renderCalendar(); };
+    grid.appendChild(b);
+  }
+  const day=$('#cal-day-list'); day.innerHTML='';
+  const [yy,mm,dd]=calDay.split('-').map(Number);
+  $('#cal-day-title').textContent=new Date(yy,mm-1,dd).toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  const list=byDay[calDay]||[];
+  if(!list.length){ const p=document.createElement('p'); p.className='pass-help'; p.textContent='No events this day.'; day.appendChild(p); }
+  for(const e of list){
+    const div=document.createElement('div'); div.className='ev-row';
+    const t=document.createElement('b'); t.textContent=(e.time?e.time+' · ':'All day · ')+e.title;
+    const meta=document.createElement('span'); meta.className='ev-meta'; meta.textContent='Added by '+(e.by||'Unnamed')+' · '+fmtTime(e.createdAt||e.updatedAt);
+    div.append(t);
+    if(e.notes){ const n=document.createElement('div'); n.className='ev-notes'; n.textContent=e.notes; div.append(n); }
+    const del=document.createElement('button'); del.className='btn danger small'; del.textContent='Delete'; del.onclick=()=>deleteEvent(e.id);
+    div.append(meta,del);
+    day.appendChild(div);
+  }
+}
+async function addEvent(){
+  const title=$('#ev-title').value.trim();
+  if(!title){ toast('Give the event a title'); return; }
+  if(!needName()) return;
+  const now=Date.now();
+  await putSyncRec('event','e'+now.toString(36)+rid(),{title:title.slice(0,200),date:calDay,time:$('#ev-time').value||'',notes:$('#ev-notes').value.slice(0,4000),by:myName(),createdAt:now},now);
+  $('#ev-title').value=''; $('#ev-time').value=''; $('#ev-notes').value='';
+  await loadEvents(); renderCalendar();
+  toast(links.size?'Event added':'Event saved — it syncs when a relay or another device is reachable');
+}
+async function deleteEvent(id){
+  if(!confirm('Delete this event for everyone on this sync code?')) return;
+  const rec={id,iv:'',data:'',updatedAt:Date.now(),deleted:true};
+  await idbPut(DB,'events',rec); publish([withKind('event',rec)]);
+  await loadEvents(); renderCalendar();
+}
+
+/* ---------- exports (local downloads) + shared export history ---------- */
+let exportLog=[];
+async function loadExports(){ exportLog=(await decryptStore('exports')).sort((a,b)=>b.at-a.at); }
+function renderExportHistory(){
+  const box=$('#export-history'); if(!box) return;
+  box.innerHTML='';
+  if(!exportLog.length){ box.textContent='No exports yet.'; return; }
+  const icon={notes:'📝',chat:'💬',calendar:'📅',photo:'🖼'};
+  for(const x of exportLog.slice(0,100)){
+    const d=document.createElement('div'); d.className='hist-row';
+    d.textContent=(icon[x.what]||'⬇')+' '+(x.what||'?')+' · '+fmtTime(x.at)+' · by '+(x.by||'Unnamed')+(x.count!=null?' · '+x.count+' item'+(x.count===1?'':'s'):'');
+    box.appendChild(d);
+  }
+}
+async function logExport(what,count){
+  const at=Date.now();
+  await putSyncRec('export','x'+at.toString(36)+rid(),{what,at,by:myName()||'Unnamed',count},at);
+  await loadExports(); renderExportHistory();
+}
+async function saveFile(name,text,mime){
+  if(window.MavPadAndroid&&typeof MavPadAndroid.saveTextFile==='function'){ MavPadAndroid.saveTextFile(name,text); return true; }
+  if(window.MavPadDesktop&&typeof MavPadDesktop.saveTextFile==='function') return !!(await MavPadDesktop.saveTextFile(name,text));
+  const blob=new Blob([text],{type:mime||'text/plain'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download=name; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href),8000);
+  return true;
+}
+const today=()=>new Date().toISOString().slice(0,10);
+function htmlToText(html){
+  const t=document.createElement('template'); t.innerHTML=sanitize(html||'');   // template content is inert: no image loads
+  const c=t.content;
+  c.querySelectorAll('img').forEach(i=>i.replaceWith('[picture]'));
+  c.querySelectorAll('br').forEach(b=>b.replaceWith('\n'));
+  c.querySelectorAll('li').forEach(b=>b.prepend('• '));
+  c.querySelectorAll('p,div,h1,h2,h3,h4,li,blockquote,pre,ul,ol').forEach(b=>b.append('\n'));
+  return (c.textContent||'').replace(/[ \t]+\n/g,'\n').replace(/\n{3,}/g,'\n\n').trim();
+}
+async function exportNotes(){
+  if(!KEY) return;
+  if(!needName()) return;
+  let out='MavPad notes — exported '+new Date().toLocaleString('en-GB')+' by '+myName()+'\n';
+  let count=0;
+  for(const t of liveTopics()){
+    const ns=liveNotes(t.id).sort((a,b)=>(a.title||'').localeCompare(b.title||''));
+    out+='\n\n==================== '+t.name+' ====================\n';
+    if(!ns.length) out+='\n(no notes)\n';
+    for(const n of ns){ count++; out+='\n# '+(n.title||'Untitled')+'\nUpdated '+fmtTime(n.updatedAt)+'\n\n'+htmlToText(n.html)+'\n\n----\n'; }
+  }
+  if(await saveFile('mavpad-notes-'+today()+'.txt',out,'text/plain')){ await logExport('notes',count); toast('⬇ Notes exported as plain text'); }
+}
+async function exportChat(){
+  if(!KEY) return;
+  if(!needName()) return;
+  await loadChat();
+  let out='MavPad chat — exported '+new Date().toLocaleString('en-GB')+' by '+myName()+'\n\n';
+  for(const m of chatMsgs) out+='['+new Date(m.at).toLocaleString('en-GB')+'] '+(m.name||'Unnamed')+': '+(m.text||'')+'\n';
+  if(await saveFile('mavpad-chat-'+today()+'.txt',out,'text/plain')){ await logExport('chat',chatMsgs.length); toast('⬇ Chat exported as plain text'); }
+}
+function icsEsc(s){ return String(s||'').replace(/\\/g,'\\\\').replace(/;/g,'\\;').replace(/,/g,'\\,').replace(/\r?\n/g,'\\n'); }
+function icsFold(line){ let out=''; while(line.length>73){ out+=line.slice(0,73)+'\r\n '; line=line.slice(73); } return out+line; }
+function icsUtc(ts){ return new Date(ts).toISOString().replace(/[-:]/g,'').replace(/\.\d{3}/,''); }
+function icsLocal(d){ return ymd(d).replace(/-/g,'')+'T'+String(d.getHours()).padStart(2,'0')+String(d.getMinutes()).padStart(2,'0')+'00'; }
+function buildICS(list){
+  const L=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//MavPad//Shared calendar//EN','CALSCALE:GREGORIAN','X-WR-CALNAME:MavPad'];
+  for(const e of list){
+    const [y,m,d]=e.date.split('-').map(Number);
+    L.push('BEGIN:VEVENT','UID:'+e.id+'@mavpad','DTSTAMP:'+icsUtc(Date.now()),'CREATED:'+icsUtc(e.createdAt||e.updatedAt));
+    if(e.time){
+      const [hh,mi]=e.time.split(':').map(Number);
+      const s=new Date(y,m-1,d,hh,mi), en=new Date(s.getTime()+3600000);
+      L.push('DTSTART:'+icsLocal(s),'DTEND:'+icsLocal(en));     // floating local time
+    }else{
+      const s=new Date(y,m-1,d), en=new Date(y,m-1,d+1);
+      L.push('DTSTART;VALUE=DATE:'+ymd(s).replace(/-/g,''),'DTEND;VALUE=DATE:'+ymd(en).replace(/-/g,''));
+    }
+    L.push('SUMMARY:'+icsEsc(e.title),'DESCRIPTION:'+icsEsc((e.notes?e.notes+'\n\n':'')+'Added by '+(e.by||'Unnamed')),'END:VEVENT');
+  }
+  L.push('END:VCALENDAR');
+  return L.map(icsFold).join('\r\n')+'\r\n';
+}
+async function exportCalendar(){
+  if(!KEY) return;
+  if(!needName()) return;
+  await loadEvents();
+  if(await saveFile('mavpad-calendar-'+today()+'.ics',buildICS(events),'text/calendar')){ await logExport('calendar',events.length); toast('⬇ Calendar exported (.ics)'); }
+}
+
+/* ---------- relay / role settings UI ---------- */
+function roleBadge(role){ return role==='main'?'Main relay':role==='backup'?'Backup relay':'Member'; }
+function renderNet(){
+  const line=$('#role-line');
+  const act=activeRelay();
+  const mainEnt=Object.keys(NET.roles).find(e=>NET.roles[e]==='main');
+  const mainTxt=mainEnt?entLabel(mainEnt):'none set';
+  if(line) line.textContent='Main relay: '+mainTxt+(act&&act.ent!==mainEnt?' · serving now: '+entLabel(act.ent):'')+' · This device: '+roleBadge(roleOf(devEnt(deviceId())));
+  const box=$('#relay-list'); if(!box) return;
+  $('#net-main').textContent=mainEnt
+    ? 'Main relay: '+mainTxt+(act?(act.role==='main'?' — serving now.':' — not connected to this device; backup '+entLabel(act.ent)+' is serving.'):' — not reachable from this device right now.')
+    : 'No main relay set yet. Add your Umbrel relays below, or set a device as main relay.';
+  box.innerHTML='';
+  if(!NET.relays.length){ const p=document.createElement('p'); p.textContent='No relays added. Devices can still sync directly while both are online.'; box.appendChild(p); }
+  for(const r of NET.relays){
+    const ent=relayEnt(r.url), st=relayState.get(r.url), status=st?st.status:'off';
+    const row=document.createElement('div'); row.className='relay-row';
+    const dot=document.createElement('span'); dot.className='dot '+(status==='up'?'up':status==='connecting'?'wait':'down');
+    const info=document.createElement('div'); info.className='relay-info';
+    const nm=document.createElement('b'); nm.textContent=(r.name||'Relay')+' — '+roleBadge(roleOf(ent));
+    const sub=document.createElement('span'); sub.textContent=r.url+' · '+(status==='up'?'connected':status==='connecting'?'connecting…':'unreachable'+(st&&st.err&&st.err!=='unreachable'?' ('+st.err+')':''));
+    info.append(nm,sub);
+    const btns=document.createElement('div'); btns.className='row';
+    const mk=(label,fn,cls)=>{ const b=document.createElement('button'); b.className='btn small '+(cls||'ghost'); b.textContent=label; b.onclick=fn; btns.appendChild(b); };
+    if(roleOf(ent)!=='main') mk('Make main',async()=>{ setRoleLocal(ent,'main'); await saveNet(); });
+    if(roleOf(ent)!=='backup') mk('Make backup',async()=>{ setRoleLocal(ent,'backup'); await saveNet(); });
+    mk('Remove',async()=>{ if(!confirm('Remove relay '+(r.name||r.url)+' for every device on this code? Its stored copy stays on that server.')) return; NET.relays=NET.relays.filter(x=>x.url!==r.url); delete NET.roles[ent]; await saveNet(); },'danger');
+    row.append(dot,info,btns); box.appendChild(row);
+  }
+  const me=devEnt(deviceId());
+  $('#my-role').textContent='This device ('+(myName()||'unnamed')+'): '+roleBadge(roleOf(me))+(mesh.role==='hub'?' · holding the device meeting point now':'');
+  const dl=$('#device-list'); dl.innerHTML='';
+  const ents=new Set(Object.keys(NET.roles).filter(e=>e.startsWith('dev:')&&e!==me));
+  links.forEach(l=>{ if(l.dev&&l.dev.id) ents.add(devEnt(l.dev.id)); });
+  for(const e of ents){
+    const online=[...links].find(l=>l.dev&&devEnt(l.dev.id)===e);
+    const d=document.createElement('div'); d.className='hist-row';
+    d.textContent=(online?'🟢 ':'⚪ ')+((online&&online.dev.name)||NET.names[e]||'Device')+' — '+roleBadge(roleOf(e));
+    dl.appendChild(d);
+  }
+  if(!ents.size) dl.textContent='No other devices seen yet.';
+}
+async function addRelay(){
+  const url=normRelayUrl($('#relay-url').value);
+  if(!url){ toast('Enter a relay address, e.g. umbrel.your-tailnet.ts.net'); return; }
+  if(location.protocol==='https:'&&url.startsWith('ws://')){ toast('This page is https, so the relay must be wss:// (use Tailscale Serve for HTTPS)'); return; }
+  if(NET.relays.some(r=>r.url===url)){ toast('That relay is already in the list'); return; }
+  const name=$('#relay-name').value.trim().slice(0,40)||url.replace(/^wss?:\/\//,'').split('.')[0];
+  NET.relays.push({url,name});
+  const hasMain=Object.values(NET.roles).includes('main');
+  NET.roles[relayEnt(url)]=hasMain?'backup':'main';
+  $('#relay-url').value=''; $('#relay-name').value='';
+  await saveNet();
+  toast('Relay added — every device on this code gets it');
+}
+
+/* ---------- photos + albums ----------
+   album: {name, by, createdAt}
+   photo: {albumId, caption, by, addedAt, takenAt, w, h, thumb}  — small, loaded for the grid
+   pixel: {img}  — the full picture, same id as its photo, read from IndexedDB only when opened
+   All three are AES-256-GCM with the sync code and ride the same relays/mesh.
+   albumId '' means "Unsorted". */
+const albums=new Map(), photos=new Map();
+const photoCache=new Map();        // id -> {updatedAt, obj}: skip re-decrypting unchanged records
+let phAlbum=null;                  // null = album list, '*' = all photos, '' = unsorted, else album id
+let viewerList=[], viewerIdx=-1;
+async function putPhotoKind(kind,id,obj,updatedAt){
+  const pack=await encJSON(KEY,obj);
+  const rec={id,iv:pack.iv,data:pack.data,updatedAt,deleted:false,del:0};
+  await idbPut(DB,KIND_STORE[kind],rec);
+  publish([withKind(kind,rec)]);
+}
+async function tombstone(kind,id){
+  const rec={id,iv:'',data:'',updatedAt:Date.now(),deleted:true,del:1};
+  await idbPut(DB,KIND_STORE[kind],rec);
+  publish([withKind(kind,rec)]);
+}
+async function loadPhotos(){
+  albums.clear();
+  for(const a of await decryptStore('albums')) albums.set(a.id,a);
+  const seen=new Set();
+  for(const m of await idbMeta(DB,'photos')){
+    if(m.deleted) continue;
+    seen.add(m.id);
+    const c=photoCache.get(m.id);
+    if(c&&c.updatedAt===m.updatedAt){ photos.set(m.id,c.obj); continue; }
+    try{
+      const r=await idbGet(DB,'photos',m.id);
+      const obj=Object.assign({id:m.id,updatedAt:r.updatedAt},await decJSON(KEY,r));
+      photoCache.set(m.id,{updatedAt:r.updatedAt,obj}); photos.set(m.id,obj);
+    }catch(e){}
+  }
+  for(const id of [...photos.keys()]) if(!seen.has(id)){ photos.delete(id); photoCache.delete(id); }
+  if(phAlbum&&phAlbum!=='*'&&phAlbum!==''&&!albums.has(phAlbum)) phAlbum=null;
+}
+function albumPhotos(aid){
+  const list=[...photos.values()].filter(p=>aid==='*'||(p.albumId||'')===aid||(aid===''&&p.albumId&&!albums.has(p.albumId)));
+  return list.sort((a,b)=>(b.takenAt||b.addedAt)-(a.takenAt||a.addedAt));
+}
+function albumName(aid){ return aid==='*'?'All photos':aid===''?'Unsorted':(albums.get(aid)||{}).name||'Album'; }
+function liveAlbums(){ return [...albums.values()].sort((a,b)=>(a.name||'').localeCompare(b.name||'')); }
+function renderPhotos(){
+  if(curView!=='photos') return;
+  const body=$('#ph-body'); body.innerHTML='';
+  const inAlbum=phAlbum!==null, real=inAlbum&&phAlbum!=='*'&&phAlbum!=='';
+  $('#ph-back').hidden=!inAlbum;
+  $('#ph-title').textContent=inAlbum?albumName(phAlbum):'Albums';
+  $('#ph-new-album').hidden=inAlbum;
+  $('#ph-rename').hidden=!real; $('#ph-del-album').hidden=!real;
+  if(!inAlbum){
+    const cards=[['*','All photos'],...liveAlbums().map(a=>[a.id,a.name]),['','Unsorted']];
+    const grid=document.createElement('div'); grid.className='album-grid';
+    for(const [aid,name] of cards){
+      const list=albumPhotos(aid);
+      if(aid===''&&!list.length) continue;
+      const b=document.createElement('button'); b.type='button'; b.className='album-card'; b.dataset.album=aid;
+      const cover=document.createElement('div'); cover.className='album-cover';
+      if(list[0]){ const img=document.createElement('img'); img.src=list[0].thumb; img.alt=''; cover.appendChild(img); } else cover.textContent='🖼';
+      const nm=document.createElement('b'); nm.textContent=name;
+      const ct=document.createElement('span'); ct.textContent=list.length+' photo'+(list.length===1?'':'s');
+      b.append(cover,nm,ct);
+      b.onclick=()=>{ phAlbum=aid; renderPhotos(); };
+      grid.appendChild(b);
+    }
+    body.appendChild(grid);
+    if(!photos.size){ const p=document.createElement('p'); p.className='pass-help'; p.textContent='No photos yet. Make an album, then add photos to it. Photos are encrypted with your sync code and shared with everyone on it.'; body.appendChild(p); }
+    return;
+  }
+  const list=albumPhotos(phAlbum);
+  if(!list.length){ const p=document.createElement('p'); p.className='pass-help'; p.textContent=phAlbum==='*'?'No photos yet.':'This album is empty. Tap “+ Add photos” or drop pictures here.'; body.appendChild(p); return; }
+  const grid=document.createElement('div'); grid.className='photo-grid';
+  list.forEach((p,i)=>{
+    const b=document.createElement('button'); b.type='button'; b.className='photo-tile'; b.title=p.caption||'';
+    const img=document.createElement('img'); img.src=p.thumb; img.alt=p.caption||''; img.loading='lazy';
+    b.appendChild(img);
+    b.onclick=()=>openViewer(list,i);
+    grid.appendChild(b);
+  });
+  body.appendChild(grid);
+}
+function scaleImage(file,max,q){
+  return new Promise((res,rej)=>{
+    const url=URL.createObjectURL(file), img=new Image();
+    img.onload=()=>{
+      URL.revokeObjectURL(url);
+      const sc=Math.min(1,max/Math.max(img.width,img.height));
+      const w=Math.max(1,Math.round(img.width*sc)), h=Math.max(1,Math.round(img.height*sc));
+      const c=document.createElement('canvas'); c.width=w; c.height=h;
+      const ctx=c.getContext('2d'); ctx.fillStyle='#fff'; ctx.fillRect(0,0,w,h); ctx.drawImage(img,0,0,w,h);
+      res({url:c.toDataURL('image/jpeg',q),w,h});
+    };
+    img.onerror=()=>{ URL.revokeObjectURL(url); rej(new Error('bad image')); };
+    img.src=url;
+  });
+}
+async function addPhotos(files){
+  files=[...files].filter(f=>f&&f.type&&f.type.startsWith('image/'));
+  if(!files.length||!KEY) return;
+  if(!needName()) return;
+  try{ if(navigator.storage&&navigator.storage.persist) navigator.storage.persist(); }catch(e){}
+  const aid=(phAlbum&&phAlbum!=='*')?phAlbum:'';
+  let done=0, bad=0;
+  for(const f of files){
+    toast('Adding photo '+(done+bad+1)+' of '+files.length+'…');
+    try{
+      const full=await scaleImage(f,2560,0.86), th=await scaleImage(f,400,0.72);
+      const now=Date.now(), id='ph'+now.toString(36)+rid();
+      await putPhotoKind('pixel',id,{img:full.url},now);
+      await putPhotoKind('photo',id,{albumId:aid,caption:'',by:myName(),addedAt:now,takenAt:f.lastModified||now,w:full.w,h:full.h,thumb:th.url},now);
+      done++;
+    }catch(e){ bad++; }
+  }
+  await loadPhotos(); renderPhotos();
+  toast('Added '+done+' photo'+(done===1?'':'s')+' to '+albumName(aid)+(bad?' · '+bad+' could not be read':'')+(links.size?'':' — they sync when a relay or device is reachable'));
+}
+async function newAlbum(){
+  const name=prompt('Album name:','');
+  if(!name||!name.trim()) return;
+  if(!needName()) return;
+  const now=Date.now(), id='al'+now.toString(36)+rid();
+  await putPhotoKind('album',id,{name:name.trim().slice(0,80),by:myName(),createdAt:now},now);
+  await loadPhotos(); phAlbum=id; renderPhotos();
+}
+async function renameAlbum(){
+  const a=albums.get(phAlbum); if(!a) return;
+  const name=prompt('Rename album:',a.name);
+  if(!name||!name.trim()||name.trim()===a.name) return;
+  await putPhotoKind('album',a.id,{name:name.trim().slice(0,80),by:a.by,createdAt:a.createdAt},Date.now());
+  await loadPhotos(); renderPhotos();
+}
+async function deleteAlbum(){
+  const a=albums.get(phAlbum); if(!a) return;
+  const list=albumPhotos(a.id);
+  if(!confirm('Delete album "'+a.name+'" for everyone? Its '+list.length+' photo'+(list.length===1?'':'s')+' move to Unsorted.')) return;
+  for(const p of list) await savePhotoMeta(p,{albumId:''});
+  await tombstone('album',a.id);
+  phAlbum=null; await loadPhotos(); renderPhotos();
+}
+async function savePhotoMeta(p,changes){
+  const obj={albumId:p.albumId||'',caption:p.caption||'',by:p.by,addedAt:p.addedAt,takenAt:p.takenAt,w:p.w,h:p.h,thumb:p.thumb};
+  Object.assign(obj,changes);
+  await putPhotoKind('photo',p.id,obj,Math.max(Date.now(),(p.updatedAt||0)+1));
+}
+/* --- viewer --- */
+async function openViewer(list,i){
+  viewerList=list; viewerIdx=i;
+  $('#ph-viewer').hidden=false;
+  await showViewer();
+}
+async function showViewer(){
+  const p=viewerList[viewerIdx]; if(!p){ closeViewer(); return; }
+  const cur=photos.get(p.id)||p;
+  const img=$('#pv-img'); img.src=cur.thumb; img.alt=cur.caption||'';
+  $('#pv-caption').value=cur.caption||'';
+  $('#pv-meta').textContent='Added by '+(cur.by||'Unnamed')+' · '+fmtTime(cur.addedAt||cur.updatedAt)+(cur.w?' · '+cur.w+'×'+cur.h:'');
+  const sel=$('#pv-album'); sel.innerHTML='';
+  for(const [v,t] of [['','Unsorted'],...liveAlbums().map(a=>[a.id,a.name])]){ const o=document.createElement('option'); o.value=v; o.textContent=t; sel.appendChild(o); }
+  sel.value=albums.has(cur.albumId)?cur.albumId:'';
+  $('#pv-count').textContent=(viewerIdx+1)+' / '+viewerList.length;
+  $('#pv-prev').disabled=viewerIdx<=0; $('#pv-next').disabled=viewerIdx>=viewerList.length-1;
+  $('#pv-status').textContent='';
+  const full=await fullImage(cur.id);
+  if(viewerList[viewerIdx]&&viewerList[viewerIdx].id===cur.id){
+    if(full) img.src=full; else $('#pv-status').textContent='Full size is still syncing — showing the preview.';
+  }
+}
+async function fullImage(id){
+  try{ const r=await idbGet(DB,'pixels',id); if(!r||r.deleted) return null; return (await decJSON(KEY,r)).img||null; }catch(e){ return null; }
+}
+function closeViewer(){ $('#ph-viewer').hidden=true; $('#pv-img').src=''; viewerList=[]; viewerIdx=-1; }
+function stepViewer(d){ const n=viewerIdx+d; if(n<0||n>=viewerList.length) return; viewerIdx=n; showViewer(); }
+async function viewerCaption(){
+  const p=photos.get((viewerList[viewerIdx]||{}).id); if(!p) return;
+  const c=$('#pv-caption').value.slice(0,500);
+  if(c===(p.caption||'')) return;
+  await savePhotoMeta(p,{caption:c}); await loadPhotos(); renderPhotos();
+}
+async function viewerMove(){
+  const p=photos.get((viewerList[viewerIdx]||{}).id); if(!p) return;
+  const aid=$('#pv-album').value;
+  await savePhotoMeta(p,{albumId:aid}); await loadPhotos(); renderPhotos();
+  toast('Moved to '+albumName(aid));
+  if(phAlbum!=='*'&&phAlbum!==aid){ viewerList.splice(viewerIdx,1); if(viewerIdx>=viewerList.length) viewerIdx=viewerList.length-1; showViewer(); }
+}
+async function viewerDelete(){
+  const p=viewerList[viewerIdx]; if(!p) return;
+  if(!confirm('Delete this photo for everyone on this sync code?')) return;
+  await tombstone('photo',p.id); await tombstone('pixel',p.id);
+  photoCache.delete(p.id);
+  viewerList.splice(viewerIdx,1); if(viewerIdx>=viewerList.length) viewerIdx=viewerList.length-1;
+  await loadPhotos(); renderPhotos();
+  if(viewerIdx<0) closeViewer(); else showViewer();
+  toast('Photo deleted');
+}
+async function viewerDownload(){
+  const p=viewerList[viewerIdx]; if(!p) return;
+  const src=await fullImage(p.id)||p.thumb;
+  const name='mavpad-photo-'+new Date(p.takenAt||p.addedAt).toISOString().slice(0,10)+'-'+p.id.slice(-6)+'.jpg';
+  if(window.MavPadAndroid){
+    // The Android WebView ignores download links: hand the bytes to the app instead.
+    if(typeof MavPadAndroid.saveImage!=='function'){ toast('Update the MavPad Android app to download photos'); return; }
+    const m=/^data:([^;,]+);base64,(.*)$/.exec(src);
+    const r=m?MavPadAndroid.saveImage(name,m[2],m[1]):'error';
+    if(r==='saved') toast('Saved to Pictures/MavPad');
+    else if(r!=='shared'){ toast('Could not save the photo'); return; }
+  }else{
+    const a=document.createElement('a'); a.href=src; a.download=name; document.body.appendChild(a); a.click(); a.remove();
+  }
+  await logExport('photo',1);
+}
+
 /* ---------- backup ---------- */
 async function exportBackup(){
-  const pack=await encJSON(KEY,{app:'mavpad',v:2,exportedAt:Date.now(),notes:await idbAll(DB,'notes'),topics:await idbAll(DB,'topics'),passwords:await idbAll(DB,'passwords')});
+  const all={}; for(const s of Object.values(KIND_STORE)) all[s]=await idbAll(DB,s);
+  const pack=await encJSON(KEY,Object.assign({app:'mavpad',v:3,exportedAt:Date.now()},all));
   const text=JSON.stringify(pack);
   const name='mavpad-backup-'+new Date().toISOString().slice(0,10)+'.json';
   if(window.MavPadAndroid&&typeof MavPadAndroid.saveTextFile==='function'){
@@ -1372,6 +2442,7 @@ async function importBackup(file){
     await applyIncoming('topics',d.topics||[]);
     await applyIncoming('notes',d.notes||[]);
     await applyIncoming('passwords',d.passwords||[]);
+    for(const s of ['chat','events','exports','config','albums','photos','pixels']) await applyIncoming(s,d[s]||[]);
     toast('⬆ Backup imported & merged');
   }catch(e){ toast('Import failed — wrong code or bad file'); }
 }
@@ -1404,7 +2475,7 @@ function refreshCodeBox(show){
   box.dataset.show=show?'1':'';
 }
 function openSettings(){
-  refreshCodeBox(false);
+  refreshCodeBox(false); renderNet(); renderExportHistory(); refreshSyncStatus(); $('#name-input').value=myName();
   $('#about-ver').textContent=APP.name+' '+APP.version+' (build '+APP.code+') — single file, no account, no tracking.';
   $('#modal').hidden=false;
 }
@@ -1438,6 +2509,46 @@ function wireEvents(){
   $('#new-topic-btn').onclick=newTopic;
   $('#new-note-btn').onclick=()=>{ showNotes(); newNote(); };
   $('#pass-btn').onclick=()=>showPasswords();
+  document.querySelectorAll('#view-tabs .vt').forEach(b=>b.onclick=()=>setView(b.dataset.view));
+  $('#chat-form').addEventListener('submit',e=>{ e.preventDefault(); sendChat(); });
+  $('#chat-export').onclick=exportChat;
+  $('#cal-prev').onclick=()=>{ calMonth=new Date(calMonth.getFullYear(),calMonth.getMonth()-1,1); renderCalendar(); };
+  $('#cal-next').onclick=()=>{ calMonth=new Date(calMonth.getFullYear(),calMonth.getMonth()+1,1); renderCalendar(); };
+  $('#cal-today').onclick=()=>{ const d=new Date(); calMonth=new Date(d.getFullYear(),d.getMonth(),1); calDay=ymd(d); renderCalendar(); };
+  $('#cal-export').onclick=exportCalendar;
+  $('#ev-add').onclick=addEvent;
+  $('#ev-title').addEventListener('keydown',e=>{ if(e.key==='Enter') addEvent(); });
+  $('#name-save').onclick=()=>{ setMyName($('#name-input').value); toast('Name saved — used on new messages and exports'); };
+  $('#relay-add').onclick=addRelay;
+  $('#relay-url').addEventListener('keydown',e=>{ if(e.key==='Enter') addRelay(); });
+  $('#role-main').onclick=()=>setThisDeviceRole('main');
+  $('#role-backup').onclick=()=>setThisDeviceRole('backup');
+  $('#role-member').onclick=()=>setThisDeviceRole('member');
+  $('#exp-notes').onclick=exportNotes;
+  $('#ph-back').onclick=()=>{ phAlbum=null; renderPhotos(); };
+  $('#ph-new-album').onclick=newAlbum;
+  $('#ph-rename').onclick=renameAlbum;
+  $('#ph-del-album').onclick=deleteAlbum;
+  $('#ph-add').onclick=()=>$('#ph-picker').click();
+  $('#ph-picker').addEventListener('change',e=>{ addPhotos(e.target.files); e.target.value=''; });
+  const phb=$('#ph-body');
+  phb.addEventListener('dragover',e=>{ e.preventDefault(); phb.classList.add('drop'); });
+  phb.addEventListener('dragleave',()=>phb.classList.remove('drop'));
+  phb.addEventListener('drop',e=>{ e.preventDefault(); phb.classList.remove('drop'); if(e.dataTransfer.files&&e.dataTransfer.files.length) addPhotos(e.dataTransfer.files); });
+  $('#pv-close').onclick=closeViewer;
+  $('#pv-prev').onclick=()=>stepViewer(-1);
+  $('#pv-next').onclick=()=>stepViewer(1);
+  $('#pv-delete').onclick=viewerDelete;
+  $('#pv-download').onclick=viewerDownload;
+  $('#pv-caption').addEventListener('change',viewerCaption);
+  $('#pv-caption').addEventListener('keydown',e=>{ if(e.key==='Enter') e.target.blur(); });
+  $('#pv-album').addEventListener('change',viewerMove);
+  document.addEventListener('keydown',e=>{
+    if($('#ph-viewer').hidden||e.target===$('#pv-caption')) return;
+    if(e.key==='ArrowLeft') stepViewer(-1); else if(e.key==='ArrowRight') stepViewer(1); else if(e.key==='Escape') closeViewer();
+  });
+  $('#exp-chat').onclick=exportChat;
+  $('#exp-cal').onclick=exportCalendar;
   $('#pass-search').addEventListener('input',e=>{ passFilter=e.target.value; renderPasswords(); });
   $('#pass-add').onclick=()=>openPassword(null);
   $('#pass-import').onclick=()=>$('#pass-file').click();
@@ -1528,7 +2639,7 @@ async function regenCode(){
   toast('Re-encrypting everything…');
   const newCode=genCode(), newKey=await deriveKey(newCode), oldKey=KEY;
   stopSync();
-  for(const store of ['notes','topics','passwords']){
+  for(const store of Object.values(KIND_STORE)){
     const recs=await idbAll(DB,store);
     for(const r of recs){
       if(r.deleted) continue;
@@ -1541,7 +2652,10 @@ async function regenCode(){
   }
   KEY=newKey; CODE=newCode;
   if(localStorage.getItem('mavpad.code')) localStorage.setItem('mavpad.code',newCode);
-  await loadAll(); renderSidebar(); refreshCodeBox(true); openFirstNote();
+  photoCache.clear();
+  await loadAll(); await loadNet(); await loadChat(); await loadEvents(); await loadExports(); await loadPhotos();
+  renderSidebar(); refreshCodeBox(true); openFirstNote(); renderNet(); renderExportHistory();
+  if(localStorage.getItem('mavpad.sync')!=='off') startSync();
   toast('🎲 New code generated — update your other devices');
 }
 (async function init(){
